@@ -1,5 +1,5 @@
 {
-    "name": "qm/monitor",
+    "name": "qingmutec/monitor",
     "description": "swoole process manager for rabbitMQ",
     "type": "library",
     "require": {
