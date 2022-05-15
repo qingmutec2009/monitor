@@ -2,6 +2,7 @@
 
 #### 介绍
 MQ监听项目
+本项目遵循MIT开源项目协定，使用MIT协议的开源软件作者只保留版权,而对使用者无任何其它限制。
 
 #### 软件架构
 软件架构说明
@@ -9,29 +10,17 @@ MQ监听项目
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+composer地址：https://packagist.org/packages/qingmutec/monitor?query=qingmutec <br/>
+composer命令： swoole process manager for rabbitMQ <br/>
+其它说明：
+1. php版本大于等于7.2。
+2. swoole版本大于v4.5.3以上
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  配置文件自行在项目中或下方拷贝一份，放在任意位置，在调用时传入配置数组。
+2.  本项目一共分成两部分，分别为多进程消费和生产者。
+3.  多进程消费使用cli模式启动,可以随意整合到框架自带的Command命令或自行调用。后台任务可以使用nohup命令。
+4.  生产端注意在配置文件中的queue_run_right_now参数使用就好，为true时将立即执行不会经过队列，主要用来调试。
+5.  注意env文件中的true和false等配置参数转入config时的值类型转换。false和"false"是不一样的。
 
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
