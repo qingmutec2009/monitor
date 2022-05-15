@@ -1,10 +1,11 @@
 <?php
-namespace qmmontitor\utils;
+namespace qmmonitor\core;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
-use qmmontitor\command\Singleton;
+use qmmonitor\extra\pojo\JobArguments;
+use qmmonitor\extra\traits\Singleton;
 use Swoole\Coroutine;
 
 /**
@@ -12,7 +13,7 @@ use Swoole\Coroutine;
  * Class RabbitMqComponent
  * @package app\mq\component
  */
-class RabbitMqUtil
+class RabbitMqManager
 {
     use Singleton;
 
@@ -98,8 +99,8 @@ class RabbitMqUtil
         $this->ticket = empty($config['ticket']) ? $this->ticket : $config['ticket'];
         $this->arguments = empty($config['arguments']) ? $this->arguments : $config['arguments'];
         //检测配置是否正常
-        ConfigManager::getInstance()->checkExchangeConfig();
-        ConfigManager::getInstance()->checkQueueConfig();
+        ConfigurationManager::getInstance()->checkExchangeConfig();
+        ConfigurationManager::getInstance()->checkQueueConfig();
         //初始化连接
         $this->getChannel();
         //是否自动完成交换机、队列及绑定
@@ -159,11 +160,11 @@ class RabbitMqUtil
         if (empty($channel)) $channel = $this->channel;
         $consumerTag = $channel->basic_consume(
             $queueName,
-            RabbitMqComponent::getInstance()->getConsumerTag(),
-            RabbitMqComponent::getInstance()->getNoLocal(),
-            RabbitMqComponent::getInstance()->getNoAck(),
-            RabbitMqComponent::getInstance()->getExclusive(),
-            RabbitMqComponent::getInstance()->getNoWait(),
+            RabbitMqManager::getInstance()->getConsumerTag(),
+            RabbitMqManager::getInstance()->getNoLocal(),
+            RabbitMqManager::getInstance()->getNoAck(),
+            RabbitMqManager::getInstance()->getExclusive(),
+            RabbitMqManager::getInstance()->getNoWait(),
             $callBack
         );
         #监听消息，一有消息，立马就处理,多进程中不使用，
@@ -219,19 +220,19 @@ class RabbitMqUtil
     public function put(array $config,string $message,RabbitMqQueueArguments $rabbitMqQueueArguments)
     {
         //获取队列名称及Job绑定信息
-        $queuesConfig = ConfigManager::getInstance()->getConfig('queue');
-        $runRightNow = (bool)ConfigManager::getInstance()->getConfig('queue_run_right_now');
+        $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
+        $runRightNow = (bool)ConfigurationManager::getInstance()->getConfig('queue_run_right_now');
         if ($runRightNow) {
             $queueName = $rabbitMqQueueArguments->getQueueName();
             //以下为兼容处理
             if (empty($queueName)) {
                 //根据配置拿到相应的job信息
-                $queueName = ConfigManager::getInstance()
+                $queueName = ConfigurationManager::getInstance()
                     ->getQueueByExchangeName($rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
                 $rabbitMqQueueArguments->setQueueName($queueName);
             } else {
                 //检测参数是否正常
-                ConfigManager::getInstance()->checkQueueExist($rabbitMqQueueArguments);
+                ConfigurationManager::getInstance()->checkQueueExist($rabbitMqQueueArguments);
             }
             $nowQueueConfig = $queuesConfig[$queueName] ?? [];
             if (empty($nowQueueConfig)) throw new \Exception("当前配置queue中缺少{$queueName}的相应配置");
@@ -246,8 +247,8 @@ class RabbitMqUtil
             return $runRightNow;
         }
         //投入到rabbitMq
-        $channel = RabbitMqComponent::getInstance($config)->getChannel();
-        $messageBody = RabbitMqComponent::getInstance($config)->transformAMQPMessage($message);
+        $channel = RabbitMqManager::getInstance($config)->getChannel();
+        $messageBody = RabbitMqManager::getInstance($config)->transformAMQPMessage($message);
         $channel->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
         return $runRightNow;
     }
@@ -257,10 +258,10 @@ class RabbitMqUtil
      */
     private function autoCreate()
     {
-        $exchanges = ConfigManager::getInstance()->getConfig('exchanges');
+        $exchanges = ConfigurationManager::getInstance()->getConfig('exchanges');
         //获取自动创建的队列的交换机和队列名称
-        $autoQueueList = ConfigManager::getInstance()->getAutoCreateQueueNameList();
-        $autoExchangeList = ConfigManager::getInstance()->getAutoCreateExchangeNameList();
+        $autoQueueList = ConfigurationManager::getInstance()->getAutoCreateQueueNameList();
+        $autoExchangeList = ConfigurationManager::getInstance()->getAutoCreateExchangeNameList();
         foreach ($exchanges as $exchangeName => $exchange) {
             //处理交换机
             if (!in_array($exchangeName,$autoExchangeList)) continue;

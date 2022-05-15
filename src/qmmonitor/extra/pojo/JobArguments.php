@@ -1,5 +1,5 @@
 <?php
-namespace qmmontitor\pojo;
+namespace qmmonitor\extra\pojo;
 
 /**
  * 任务参数实体类

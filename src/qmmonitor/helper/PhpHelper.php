@@ -1,9 +1,10 @@
 <?php
-namespace qmmontitor\helper;
+namespace qmmonitor\helper;
 
 
 use app\mo\console\Command;
 use app\mq\config\ConfigManager;
+use qmmonitor\core\ConfigurationManager;
 
 class PhpHelper
 {
@@ -53,9 +54,28 @@ class PhpHelper
      */
     public static function getPidFile() : string
     {
-        $tempDir = ConfigManager::getInstance()->getConfig('temp_dir');
+        $tempDir = ConfigurationManager::getInstance()->getConfig('temp_dir');
         $pidFile = $tempDir.'/'.Command::getInstance()->appName.'.pid';
         return $pidFile;
+    }
+
+    /**
+     * 调用
+     *
+     * @param mixed $cb   callback函数，多种格式
+     * @param array $args 参数
+     *
+     * @return mixed
+     */
+    public static function call($cb, array $args = [])
+    {
+        if (version_compare(SWOOLE_VERSION, '4.0', '>=')) {var_dump(3);
+            $ret = call_user_func_array($cb, $args);
+        } else {var_dump(5);
+            $ret = \Swoole\Coroutine::call_user_func_array($cb, $args);
+        }
+
+        return $ret;
     }
 
     /**
@@ -69,4 +89,5 @@ class PhpHelper
             exec($command,$output,$resultCode);
         }
     }
+
 }

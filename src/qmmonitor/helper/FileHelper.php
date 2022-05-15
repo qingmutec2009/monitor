@@ -1,5 +1,5 @@
 <?php
-namespace qmmontitor\helper;
+namespace qmmonitor\helper;
 
 
 class FileHelper

@@ -59,7 +59,7 @@ return [
         //公共模块队列
         'fanout_qm_image_upload_queue' => [
             'job' => [
-                \qmmonitor\test\TestJob::class,
+                \app\mq\job\TestJob::class,
             ],
             //'INTERVAL' => 5,
             'count' => 2,
@@ -67,7 +67,7 @@ return [
         ],
         'direct_qm_goods_input_queue' => [
             'job' => [
-                \qmmonitor\test\TestJob::class,
+                \app\mq\job\TestJob::class,
             ],
             //'INTERVAL' => 5,
             'count' => 2,
@@ -76,15 +76,15 @@ return [
     ],
 
     'amqp'      => [
-        'host'          => '127.0.0.1',
-        'port'          => 5672,
-        'user'          => 'root',
-        'password'      => '584520Wang',
-        'virtual'       => '/',
+        'host'          => env('RABBITMQ.HOST','127.0.0.1'),
+        'port'          => (int)env('RABBITMQ.PORT',5672),
+        'user'          => env('RABBITMQ.USER','root'),
+        'password'      => env('RABBITMQ.PASSWORD',''),
+        'virtual'       => env('RABBITMQ.VIRTUAL','/'),
         //生产
-        'keep_alive'    => true,//连接保持
-        'connection_timeout'    => 60,//连接超时时间
-        'heart_beat'    => 15,//心跳检测
+        'keep_alive'    => (bool)env('RABBITMQ.KEEP_ALIVE',true),//连接保持
+        'connection_timeout'    => (int)env('RABBITMQ.CONNECTION_TIMEOUT',60),//连接超时时间
+        'heart_beat'    => (int)env('RABBITMQ.HEART_BEAT',15),//心跳检测
         //消费
         'consumer_tag'  => '',//消费者标识符
         'no_local'      => false,//不接受此使用者发布的消息

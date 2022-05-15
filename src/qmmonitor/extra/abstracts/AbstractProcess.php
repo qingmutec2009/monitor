@@ -1,7 +1,7 @@
 <?php
-namespace qmmontitor\abstracts;
+namespace qmmonitor\extra\abstracts;
 
-use qmmontitor\command\Singleton;
+use qmmonitor\extra\traits\Singleton;
 use Swoole\Process;
 use Swoole\Process\Manager;
 
@@ -62,7 +62,7 @@ abstract class AbstractProcess
         return $this->process;
     }
 
-    abstract public function createProcess(...$argument);
+    abstract public function createProcess(...$arguments);
 
     //abstract public function executeRabbitMq(bool $enableCoroutine,string $queueName,array $amqpConfig,array $queueConfig);
 

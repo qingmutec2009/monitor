@@ -1,6 +1,6 @@
 <?php
 
-namespace qmmontitor\extra;
+namespace qmmonitor\extra;
 
 /**
  * Class Color

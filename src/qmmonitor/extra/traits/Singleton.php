@@ -1,6 +1,6 @@
 <?php
 
-namespace qmmontitor\command;
+namespace qmmonitor\extra\traits;
 
 /**
  * 单例模式trait

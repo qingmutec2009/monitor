@@ -1,8 +1,11 @@
 <?php
-namespace qmmontitor\utils;
+namespace qmmonitor\core;
 
 
-class ConfigurationUtil
+use qmmonitor\extra\Color;
+use qmmonitor\extra\traits\Singleton;
+
+class ConfigurationManager
 {
     use Singleton;
 
@@ -14,23 +17,44 @@ class ConfigurationUtil
 
     public function __construct()
     {
-        defined('SWOOLE_VERSION') or define('SWOOLE_VERSION', intval(phpversion('swoole')));
-        defined('MONITOR_ROOT') or define('MONITOR_ROOT', realpath(getcwd()));
-        $configContent = $this->loadConfig();
-        $this->config = $configContent;
     }
 
     /**
      * 加载配置
+     * @param array $config
      * @return array
      * @throws \Exception
      */
-    private function loadConfig() : array
+    public function loadConfig(array $config = []) : array
     {
-        $configPath = app()->getAppPath().DIRECTORY_SEPARATOR.'mq'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'config.php';
-        if (!is_file($configPath)) throw new \Exception('配置文件不存在');
-        $content = include ($configPath);
-        return $content;
+        //指定配置文件
+        if (empty($config)) {
+            $configFile = ConfigurationManager::getInstance()->getDefaultConfigFile();
+            if (empty($configFile) || !is_file($configFile)) exit(Color::error("当前默认配置文件不存在"));
+            $config = include $configFile;
+            if (empty($config)) exit(Color::error("当前默认配置文件内容为空"));
+        }
+        $this->config = $config;
+        return $config;
+    }
+
+    /**
+     * 获取默认的配置文件目录
+     * @return string
+     */
+    private function getDefaultConfigPath() : string
+    {
+        return MONITOR_ROOT .DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'qmmonitor' . DIRECTORY_SEPARATOR . 'config';
+    }
+
+    /**
+     * 获取默认的配置文件带路径
+     * @param string $fileName
+     * @return string
+     */
+    public function getDefaultConfigFile(string $fileName = 'config.php')
+    {
+        return $this->getDefaultConfigPath() . DIRECTORY_SEPARATOR . $fileName;
     }
 
     /**
@@ -59,7 +83,7 @@ class ConfigurationUtil
      */
     public function checkExchangeConfig()
     {
-        $exChangesConfig = ConfigManager::getInstance()->getConfig('exchanges');
+        $exChangesConfig = $this->getConfig('exchanges');
         foreach ($exChangesConfig as $exchangeName => $exChange) {
             if (empty($exchangeName)) throw new \Exception('交换机名称不能为空');
             $queues = $exChange['queues'] ?? [];
@@ -144,7 +168,7 @@ class ConfigurationUtil
      */
     public function getAutoCreateQueueNameList()
     {
-        $queuesConfig = ConfigManager::getInstance()->getConfig('queue');
+        $queuesConfig = $this->getConfig('queue');
         $queueList = [];
         foreach ($queuesConfig as $queueName => $queueConfig) {
             if (!empty($queueConfig['auto_create']) && $queueConfig['auto_create'] === true) {
@@ -163,7 +187,7 @@ class ConfigurationUtil
         //获取自动创建的队列集合
         $autoQueueNameList = $this->getAutoCreateQueueNameList();
         //找出exchange
-        $exchanges = ConfigManager::getInstance()->getConfig('exchanges');
+        $exchanges = $this->getConfig('exchanges');
         $autoExchangeNameList = [];
         foreach ($autoQueueNameList as $autoQueueName) {
             foreach ($exchanges as $exchangeName => $exchange) {
@@ -207,7 +231,7 @@ class ConfigurationUtil
      */
     public function checkQueueExist(RabbitMqQueueArguments $rabbitMqQueueArguments)
     {
-        $exchanges = ConfigManager::getInstance()->getConfig('exchanges');
+        $exchanges = $this->getConfig('exchanges');
         $exchangeName = $this->getExchangeNameByQueueName($rabbitMqQueueArguments->getQueueName());
         if (empty($exchangeName)) throw new \Exception("配置中无法匹配到当前队列名={$exchangeName}");
         $queues = $exchanges[$exchangeName]['queues'];

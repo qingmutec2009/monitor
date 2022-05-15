@@ -1,5 +1,6 @@
 <?php
-include 'vendor/autoload.php';
+//include 'vendor/autoload.php';
+include "src/qmmonitor/bootstrap.php";
 
-$a = new \qmmonitor\Bootstrap();
-$a->run();
+$command = new \qmmonitor\command\Command();
+$command->run();

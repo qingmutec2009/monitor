@@ -1,5 +1,5 @@
 <?php
-namespace qmmontitor\pojo;
+namespace qmmonitor\extra\pojo;
 
 /**
  * rabbitmq队列参数
