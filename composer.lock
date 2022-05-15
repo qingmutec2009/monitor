@@ -4,8 +4,51 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "da8eea52da671e25559e73896e9f9569",
+    "content-hash": "6b7e135c9c93c61e8aa140ed73e8c946",
     "packages": [
+        {
+            "name": "easyswoole/swoole-ide-helper",
+            "version": "1.3.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/easy-swoole/ide-helper.git",
+                "reference": "d23445978f55de24fec17848321dada1735083cd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/easy-swoole/ide-helper/zipball/d23445978f55de24fec17848321dada1735083cd",
+                "reference": "d23445978f55de24fec17848321dada1735083cd",
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "~6.5.0",
+                "laminas/laminas-code": "~3.4.0",
+                "squizlabs/php_codesniffer": "~3.5.0",
+                "symfony/filesystem": "~4.0"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Team Swoole",
+                    "email": "team@swoole.com"
+                }
+            ],
+            "description": "IDE help files for Swoole.",
+            "support": {
+                "source": "https://github.com/easy-swoole/ide-helper/tree/1.3.3"
+            },
+            "time": "2021-06-17T12:24:48+00:00"
+        },
         {
             "name": "paragonie/constant_time_encoding",
             "version": "v2.5.0",
@@ -228,12 +271,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "2e963c0002ce59982f34265dfb3506c82d9eee59"
+                "reference": "4076ff685ad195315c0c9f3ab598316fc2ba2fbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/2e963c0002ce59982f34265dfb3506c82d9eee59",
-                "reference": "2e963c0002ce59982f34265dfb3506c82d9eee59",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/4076ff685ad195315c0c9f3ab598316fc2ba2fbc",
+                "reference": "4076ff685ad195315c0c9f3ab598316fc2ba2fbc",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -335,7 +378,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-11T04:08:46+00:00"
+            "time": "2022-05-13T20:04:12+00:00"
         }
     ],
     "packages-dev": [],
