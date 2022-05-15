@@ -31,7 +31,7 @@ class ProcessManager extends AbstractProcess
     {
         /**@var $pm \Swoole\Process\Manager **/
         $pm = $this->process;
-        $pm->addBatch($nowQueueConfig['count'],function (Pool $pool,$workerId) use ($queueName,$amqpConfig,$nowQueueConfig,$enableCoroutine){
+        $pm->addBatch($nowQueueConfig['count'],function (Pool $pool,$workerId) use ($queueName,$amqpConfig,$nowQueueConfig){
             //防止异常退出
             $running = true;
             $pid = posix_getpid();
@@ -42,7 +42,7 @@ class ProcessManager extends AbstractProcess
             while ($running) {
                 //创建回调-todo $enableCoroutine只是用来临时测试
                 $callBack = RabbitMqManager::getInstance($amqpConfig)
-                    ->consumerCallBack($nowQueueConfig,$queueName,$enableCoroutine,$workerId,$pid);
+                    ->consumerCallBack($nowQueueConfig,$queueName,$workerId,$pid);
                 //设置channel并消费
                 $channel = RabbitMqManager::getInstance()->qos();
                 RabbitMqManager::getInstance()->consumer($queueName, $callBack,$channel);

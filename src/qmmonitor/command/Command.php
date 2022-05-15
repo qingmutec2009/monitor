@@ -4,6 +4,7 @@ namespace qmmonitor\command;
 use qmmonitor\core\ConfigurationManager;
 use qmmonitor\core\Core;
 use qmmonitor\extra\Color;
+use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\helper\FileHelper;
 use qmmonitor\helper\PhpHelper;
 
@@ -30,7 +31,9 @@ class Command
         $this->commandHandler();
     }
 
-
+    /**
+     * 命令执行
+     */
     public function commandHandler()
     {
         Core::getInstance()->processManagerConsumerForMq();
@@ -79,6 +82,9 @@ class Command
         return $this;
     }
 
+    /**
+     * 检查环境
+     */
     private function checkEnvironment()
     {
         if (version_compare(PHP_VERSION, '7.1', '<')) {
@@ -97,5 +103,19 @@ class Command
         if (extension_loaded('xdebug')) {
             exit(Color::error("ERROR: XDebug has been enabled, which conflicts with qmmonitor."));
         }
+    }
+
+    /**
+     * 生产
+     * @param string $message
+     * @param RabbitMqQueueArguments $rabbitMqQueueArguments
+     * @param array $config 外部的全量配置文件
+     * @return null
+     * @throws \Exception
+     */
+    public function put(string $message,RabbitMqQueueArguments $rabbitMqQueueArguments,array $config = [])
+    {
+        ConfigurationManager::getInstance()->loadConfig($config);
+        return Core::getInstance()->put($message,$rabbitMqQueueArguments,$config);
     }
 }

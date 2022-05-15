@@ -3,6 +3,7 @@ namespace qmmonitor\core;
 
 
 use qmmonitor\extra\Color;
+use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
 
 class ConfigurationManager

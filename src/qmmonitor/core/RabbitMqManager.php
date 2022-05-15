@@ -5,6 +5,7 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use qmmonitor\extra\pojo\JobArguments;
+use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
 use Swoole\Coroutine;
 
@@ -177,23 +178,16 @@ class RabbitMqManager
      * 回调
      * @param string $nowQueueConfig 当前队列配置
      * @param string $queueName 队列名称
-     * @param bool $enableCoroutine 是否开启协程 临时参数
      * @param $workerId 当前工作id 0、1、2、3、4这样
      * @param int $pid 当前父级工作进程id
      * @return \Closure
      */
-    public function consumerCallBack(array $nowQueueConfig,string $queueName,bool $enableCoroutine,int $workerId,$pid = 0) : \Closure
+    public function consumerCallBack(array $nowQueueConfig,string $queueName,int $workerId,$pid = 0) : \Closure
     {
-        return  function (AMQPMessage $msg) use ($nowQueueConfig,$queueName,$enableCoroutine,$workerId,$pid){
+        return  function (AMQPMessage $msg) use ($nowQueueConfig,$queueName,$workerId,$pid){
             echo " [workerId={$workerId},pid={$pid}] Received ", $msg->body, "\n";
-            //$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-            //todo $enableCoroutine变量测试时使用
-            if ($enableCoroutine) {
-                Coroutine::sleep(3);
-            } else {
-                sleep(3);
-            }
-            echo "{$workerId}模拟处理完成，即将进入真实的Job执行文件中".PHP_EOL;
+            //sleep(3);
+            //echo "{$workerId}模拟处理完成，即将进入真实的Job执行文件中".PHP_EOL;
             //处理当前整合信息
             $jobArguments = new JobArguments();
             $jobArguments->setMessage($msg->body);
@@ -212,12 +206,10 @@ class RabbitMqManager
 
     /**
      * 写入队列 todo 本方法可以通过interface或abstract来约束名称
-     * @param array $config
      * @param string $message
      * @param RabbitMqQueueArguments $rabbitMqQueueArguments
-     * @throws \think\Exception
      */
-    public function put(array $config,string $message,RabbitMqQueueArguments $rabbitMqQueueArguments)
+    public function put(string $message,RabbitMqQueueArguments $rabbitMqQueueArguments)
     {
         //获取队列名称及Job绑定信息
         $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
@@ -247,8 +239,8 @@ class RabbitMqManager
             return $runRightNow;
         }
         //投入到rabbitMq
-        $channel = RabbitMqManager::getInstance($config)->getChannel();
-        $messageBody = RabbitMqManager::getInstance($config)->transformAMQPMessage($message);
+        $channel = $this->getChannel();
+        $messageBody = $this->transformAMQPMessage($message);
         $channel->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
         return $runRightNow;
     }

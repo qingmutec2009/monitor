@@ -2,6 +2,7 @@
 namespace qmmonitor\core;
 
 use qmmonitor\extra\pojo\JobArguments;
+use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
 use qmmonitor\helper\FileHelper;
 use qmmonitor\process\ProcessManager;
@@ -51,6 +52,21 @@ class Core
             ProcessManager::getInstance()->executeRabbitMq($enableCoroutine,$queueName,$amqpConfig,$nowQueueConfig);
         }
         ProcessManager::getInstance()->start();
+    }
+
+    /**
+     * 生产
+     * @param string $message
+     * @param RabbitMqQueueArguments $rabbitMqQueueArguments
+     * @param array $config 外部的全量配置文件
+     * @return null
+     * @throws \Exception
+     */
+    public function put(string $message,RabbitMqQueueArguments $rabbitMqQueueArguments,array $config = [])
+    {
+        ConfigurationManager::getInstance()->loadConfig($config);
+        $connectionConfig = ConfigurationManager::getInstance()->getConfig('amqp');
+        return \qmmonitor\core\RabbitMqManager::getInstance($connectionConfig)->put($message,$rabbitMqQueueArguments);
     }
 
 

@@ -33,6 +33,7 @@ class TestJob extends AbstractJob
         ];
         Db::table('xfhz_record')->where('record_id',$this->params['record_id'])
             ->update($update);*/
+        echo '以下打印是任务打印'.PHP_EOL;
         var_dump($this->params);
         //var_dump("更新完成");
     }

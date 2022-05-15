@@ -60,25 +60,6 @@ class PhpHelper
     }
 
     /**
-     * 调用
-     *
-     * @param mixed $cb   callback函数，多种格式
-     * @param array $args 参数
-     *
-     * @return mixed
-     */
-    public static function call($cb, array $args = [])
-    {
-        if (version_compare(SWOOLE_VERSION, '4.0', '>=')) {var_dump(3);
-            $ret = call_user_func_array($cb, $args);
-        } else {var_dump(5);
-            $ret = \Swoole\Coroutine::call_user_func_array($cb, $args);
-        }
-
-        return $ret;
-    }
-
-    /**
      * PhpHelper::kill("php-work");
      * @param string $str
      */
@@ -88,6 +69,21 @@ class PhpHelper
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
         }
+    }
+
+    /**
+     * 转化配置中的bool值
+     * @param $val
+     * @return bool
+     */
+    public static function formatConfigurationBool($val) : bool
+    {
+        if (is_string($val)) {
+            return $val === 'true' ? true : false;
+        } elseif (is_numeric($val)) {
+            return (bool)$val;
+        }
+        return false;
     }
 
 }
