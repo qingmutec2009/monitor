@@ -1,7 +1,7 @@
 <?php
 return [
     //临时目录
-    'temp_dir'    => 'temp',
+    //'temp_dir'    => 'temp',
     'log_dir'     => 'log',
     //'pid_file'      => 'pid',
     'queue_run_right_now'   => false,

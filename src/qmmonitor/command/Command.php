@@ -42,20 +42,20 @@ class Command
     private function directoryInit()
     {
         //创建临时目录    请以绝对路径，不然守护模式运行会有问题
-        $tempDir = ConfigurationManager::getInstance()->getConfig('temp_dir');
+        /*$tempDir = ConfigurationManager::getInstance()->getConfig('temp_dir');
         if (empty($tempDir)) {
             //如果没有指定TEMP_DIR则会默认使用根目录下的Temp来作为临时目录
             $tempDir = MONITOR_ROOT . '/temp';
             ConfigurationManager::getInstance()->setConfig('temp_dir', $tempDir);
         } else {
             $tempDir = rtrim($tempDir, '/');
-        }
+        }*/
         //如果临时目录不存在则会创建临时目录
-        if (!is_dir($tempDir)) {
+        /*if (!is_dir($tempDir)) {
             FileHelper::createDirectory($tempDir);
-        }
+        }*/
         //定义临时目录常量
-        defined('MONITOR_TEMP_DIR') or define('MONITOR_TEMP_DIR', $tempDir);
+        //defined('MONITOR_TEMP_DIR') or define('MONITOR_TEMP_DIR', $tempDir);
 
         $logDir = ConfigurationManager::getInstance()->getConfig('log_dir');
         if (empty($logDir)) {
