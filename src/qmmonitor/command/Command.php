@@ -9,12 +9,19 @@ use qmmonitor\helper\PhpHelper;
 
 class Command
 {
+    public function __construct()
+    {
+        defined('SWOOLE_VERSION') or define('SWOOLE_VERSION', intval(phpversion('swoole')));
+        defined('MONITOR_ROOT') or define('MONITOR_ROOT', realpath(getcwd()));
+    }
+
     /**
      * @param array $config 配置文件
      * @param array $config
      */
     public function run(array $config = [])
     {
+        $this->checkEnvironment();
         //兼容opcache
         PhpHelper::opCacheClear();
         echo 'Server starting ...', PHP_EOL;
@@ -70,5 +77,25 @@ class Command
             Config::getInstance()->setConf('MAIN_SERVER.SETTING.log_file', $logDir . '/swoole.log');
         }*/
         return $this;
+    }
+
+    private function checkEnvironment()
+    {
+        if (version_compare(PHP_VERSION, '7.1', '<')) {
+            exit(Color::error("ERROR: SMProxy requires [PHP >= 7.1]."));
+        }
+        // Check requirements - Swoole
+        if (extension_loaded('swoole') && defined('SWOOLE_VERSION')) {
+            if (version_compare(SWOOLE_VERSION, '4.5.3', '<')) {
+                exit(Color::error("ERROR: qmmonitor requires [Swoole >= 4.5.3]."));
+            }
+        } else {
+            //todo 临时注释
+            //exit(Color::error("ERROR: swoole was not installed."));
+        }
+
+        if (extension_loaded('xdebug')) {
+            exit(Color::error("ERROR: XDebug has been enabled, which conflicts with qmmonitor."));
+        }
     }
 }
