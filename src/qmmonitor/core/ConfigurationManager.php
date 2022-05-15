@@ -30,9 +30,9 @@ class ConfigurationManager
         //指定配置文件
         if (empty($config)) {
             $configFile = ConfigurationManager::getInstance()->getDefaultConfigFile();
-            if (empty($configFile) || !is_file($configFile)) exit(Color::error("当前默认配置文件不存在"));
+            if (empty($configFile) || !is_file($configFile)) exit(Color::error("当前默认配置文件不存在").PHP_EOL);
             $config = include $configFile;
-            if (empty($config)) exit(Color::error("当前默认配置文件内容为空"));
+            if (empty($config)) exit(Color::error("当前默认配置文件内容为空").PHP_EOL);
         }
         $this->config = $config;
         return $config;
@@ -85,14 +85,14 @@ class ConfigurationManager
     {
         $exChangesConfig = $this->getConfig('exchanges');
         foreach ($exChangesConfig as $exchangeName => $exChange) {
-            if (empty($exchangeName)) throw new \Exception('交换机名称不能为空');
+            if (empty($exchangeName)) exit(Color::error('交换机名称不能为空'));
             $queues = $exChange['queues'] ?? [];
-            if (empty($queues)) throw new \Exception("当前交换机{$exchangeName}必须配置队列信息");
+            if (empty($queues)) exit(Color::error("当前交换机{$exchangeName}必须配置队列信息"));
             foreach ($queues as $queueName => $queue) {
-                if (empty($queueName)) throw new \Exception('队列名称不能为空');
+                if (empty($queueName)) exit(Color::error('队列名称不能为空'));
                 if ($exChange['type'] == 'direct' || $exChange['type'] == 'topic') {
                     if (empty($queue['route_key'])) {
-                        throw new \Exception("当前队列名称为{$queue['name']}在模式{$exChange['type']}下需要指定route_key");
+                        exit(Color::error("当前队列名称为{$queue['name']}在模式{$exChange['type']}下需要指定route_key"));
                     }
                 }
             }
@@ -108,9 +108,9 @@ class ConfigurationManager
         $queueConfig = $this->getConfig('queue');
         $queueNames = $this->getQueueNames();
         foreach ($queueConfig as $queueName => $queueInfo) {
-            if (empty($queueInfo['job'])) throw new \Exception('队列执行任务配置不能为空');
+            if (empty($queueInfo['job'])) exit(Color::error('队列执行任务配置不能为空'));
             //查看队列名称是否注册在exchange中
-            if (!in_array($queueName,$queueNames)) throw new \Exception("当前队列名称{$queueName}不在exchange中");
+            if (!in_array($queueName,$queueNames)) exit(Color::error("当前队列名称{$queueName}不在exchange中"));
             if (empty($queueInfo['count'])) $queueConfig[$queueName]['count'] = 1;
             if (is_string($queueInfo['job'])) $queueConfig[$queueName]['job'] = explode(',',$queueInfo['job']);
         }
@@ -210,18 +210,18 @@ class ConfigurationManager
      */
     public function getQueueByExchangeName(string $exchangeName,string $routeKey) : string
     {
-        if (empty($exchangeName)) throw new \Exception('exchange不能为空');
+        if (empty($exchangeName)) exit(Color::error('exchange不能为空'));
         $exchangesonfig = $this->getConfig('exchanges');
         $config = $exchangesonfig[$exchangeName] ?? [];
-        if (empty($config)) throw new \Exception("当前exchange={$exchangeName}未配置");
+        if (empty($config)) exit(Color::error("当前exchange={$exchangeName}未配置"));
         $queues = $config['queues'] ?? [];
-        if (empty($queues)) throw new \Exception("当前交换机{$exchangeName}必须配置队列信息");
+        if (empty($queues)) exit(Color::error("当前交换机{$exchangeName}必须配置队列信息"));
         foreach ($queues as $queueName => $queueInfo) {
             if ($queueInfo['route_key'] == $routeKey) {
                 return $queueName;
             }
         }
-        throw new \Exception("当前exchange={$exchangeName}和route_key={$routeKey}未能匹配到对应的除名名称，请检查配置");
+        exit(Color::error("当前exchange={$exchangeName}和route_key={$routeKey}未能匹配到对应的除名名称，请检查配置"));
     }
 
     /**
@@ -233,14 +233,14 @@ class ConfigurationManager
     {
         $exchanges = $this->getConfig('exchanges');
         $exchangeName = $this->getExchangeNameByQueueName($rabbitMqQueueArguments->getQueueName());
-        if (empty($exchangeName)) throw new \Exception("配置中无法匹配到当前队列名={$exchangeName}");
+        if (empty($exchangeName)) exit(Color::error("配置中无法匹配到当前队列名={$exchangeName}"));
         $queues = $exchanges[$exchangeName]['queues'];
         $queueName = $rabbitMqQueueArguments->getQueueName();
-        if (empty($queueName)) throw new \Exception('RabbitMqQueueArguments对象中必须设置队列名称');
+        if (empty($queueName)) exit(Color::error('RabbitMqQueueArguments对象中必须设置队列名称'));
         $queue = $queues[$queueName];
         if (!empty($queue)) {
             if ($queue['route_key'] != $rabbitMqQueueArguments->getRouteKey()) {
-                throw new \Exception('路由key配置异常');
+                exit(Color::error('路由key配置异常'));
             }
         }
     }
