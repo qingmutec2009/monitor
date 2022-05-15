@@ -88,7 +88,7 @@ return [
         //消费
         'consumer_tag'  => '',//消费者标识符
         'no_local'      => false,//不接受此使用者发布的消息
-        'no_ack'        => false,//使用者使用自动确认模式
+        'no_ack'        => false,//使用者使用自动确认模式,processManager模式下必须为false
         'exclusive'     => false,//请求独占使用者访问
         'nowait'        => false,//不等待
         'ticket'        => null,
