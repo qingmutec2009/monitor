@@ -39,7 +39,7 @@ class ProcessManager extends AbstractProcess
             $processName = "php-work-{$queueName}-{$workerId}";
             $this->setProcessName("php-work-{$queueName}-{$workerId}");
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . "\n");
-            //创建回调-todo $enableCoroutine只是用来临时测试
+            //创建回调
             $callBack = RabbitMqManager::getInstance($amqpConfig)
                 ->consumerCallBack($nowQueueConfig,$queueName,$workerId,$pid);
             //设置channel并消费

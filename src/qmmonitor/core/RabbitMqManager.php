@@ -186,7 +186,7 @@ class RabbitMqManager
     {
         return  function (AMQPMessage $msg) use ($nowQueueConfig,$queueName,$workerId,$pid){
             echo " [workerId={$workerId},pid={$pid}] Received ", $msg->body, "\n";
-            //sleep(3);
+            sleep(3);
             //echo "{$workerId}模拟处理完成，即将进入真实的Job执行文件中".PHP_EOL;
             //处理当前整合信息
             $jobArguments = new JobArguments();
