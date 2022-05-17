@@ -116,13 +116,13 @@ class Command
 
     /**
      * 生产
-     * @param string $message
+     * @param mixed $message
      * @param RabbitMqQueueArguments $rabbitMqQueueArguments
      * @param array $config 外部的全量配置文件
      * @return null
      * @throws \Exception
      */
-    public function put(string $message,RabbitMqQueueArguments $rabbitMqQueueArguments,array $config = [])
+    public function put($message,RabbitMqQueueArguments $rabbitMqQueueArguments,array $config = [])
     {
         ConfigurationManager::getInstance()->loadConfig($config);
         return Core::getInstance()->put($message,$rabbitMqQueueArguments,$config);

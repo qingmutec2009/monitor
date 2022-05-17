@@ -116,13 +116,20 @@ class RabbitMqManager
             $this->connectionTimeout,$this->rwTimeout,$this->context,$this->keepAlive,$this->heartBeat,
             $this->channelRpcTimeout,$this->sslProtocol
         );
+        /*$connection = AMQPStreamConnection::create_connection([
+            ['host' => HOST1, 'port' => PORT, 'user' => USER, 'password' => PASS, 'vhost' => VHOST],
+            ['host' => HOST2, 'port' => PORT, 'user' => USER, 'password' => PASS, 'vhost' => VHOST]
+        ],
+            $options);*/
         return $this->connection;
     }
 
     public function getChannel()
     {
-        $this->getConnection();
-        $this->channel = $this->connection->channel();
+        if (empty($this->channel)) {
+            $this->getConnection();
+            $this->channel = $this->connection->channel();
+        }
         return $this->channel;
     }
 
@@ -143,7 +150,7 @@ class RabbitMqManager
     public function qos(? AMQPChannel $channel = null,$prefetchSize = 1,$prefetchCount = null,$aGlobal = null) : AMQPChannel
     {
         if (empty($channel)) $channel = $this->getChannel();
-        //设置prefetch_count=1。这样是告诉RabbitMQ，再同一时刻，不要发送超过1条消息给一个工作者（worker），
+        //设置prefetch_count=1。这样是告诉RabbitMQ，再同一时刻，不要发送超过1条消息给一个工作者（worker），即按消费能力分发
         //直到它已经处理了上一条消息并且作出了响应。这样，RabbitMQ就会把消息分发给下一个空闲的工作者（worker），轮询、负载均衡配置
         $channel->basic_qos(null, $prefetchSize, null);
         $this->channel = $channel;
@@ -186,7 +193,7 @@ class RabbitMqManager
     {
         return  function (AMQPMessage $msg) use ($nowQueueConfig,$queueName,$workerId,$pid){
             //echo " [workerId={$workerId},pid={$pid}] Received ", $msg->body, "\n";
-            sleep(3);
+            //sleep(3);
             //echo "{$workerId}模拟处理完成，即将进入真实的Job执行文件中".PHP_EOL;
             //处理当前整合信息
             $jobArguments = new JobArguments();
@@ -206,10 +213,10 @@ class RabbitMqManager
 
     /**
      * 写入队列 todo 本方法可以通过interface或abstract来约束名称
-     * @param string $message
+     * @param mixed $message
      * @param RabbitMqQueueArguments $rabbitMqQueueArguments
      */
-    public function put(string $message,RabbitMqQueueArguments $rabbitMqQueueArguments)
+    public function put($message,RabbitMqQueueArguments $rabbitMqQueueArguments)
     {
         //获取队列名称及Job绑定信息
         $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
@@ -239,9 +246,10 @@ class RabbitMqManager
             return $runRightNow;
         }
         //投入到rabbitMq
-        $channel = $this->getChannel();
         $messageBody = $this->transformAMQPMessage($message);
-        $channel->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
+        //$this->getChannel()->confirm_select()
+
+        $this->getChannel()->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
         return $runRightNow;
     }
 
@@ -318,12 +326,12 @@ class RabbitMqManager
 
     /**
      * 转化为标准化的AMQPMessage
-     * @param string $messageBody
+     * @param mixed $messageBody
      * @return AMQPMessage
      */
-    public function transformAMQPMessage(string $messageBody)
+    public function transformAMQPMessage($messageBody,$options = array('content_type' => 'text/plain', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT))
     {
-        $message = new AMQPMessage($messageBody, array('content_type' => 'text/plain', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT));
+        $message = new AMQPMessage($messageBody, $options);
         return $message;
     }
     /**

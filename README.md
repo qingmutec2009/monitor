@@ -25,6 +25,7 @@ composer命令： swoole process manager for rabbitMQ <br/>
 5.  注意env文件中的true和false等配置参数转入config时的值类型转换。false和"false"是不一样的。
 6.  后台运行：nohup command &   | nohup ./command >test.log&   |  nohup ./command >>test.log&
     > 说明：命令执行的结果保存到test.log中 ">"表示覆盖原文件内容（文件的日期也会自动更新），">>"表示追加内容（会另起一行，文件的日期也会自动更新）
-7.  当前只支持processManager模式使用多进程，在此进程模式下消息必须是消息消费确认模式，所以"no_ack"配置必须=false。否则将不能启动项目。   
+7.  当前只支持processManager模式使用多进程，在此进程模式下消息必须是消息消费确认模式，所以"no_ack"配置必须=false。否则将不能启动项目。
+8.  当前项目已经默认将"php-amqplib"添加为依赖所以可以不用单独为其设置依赖
     
 
