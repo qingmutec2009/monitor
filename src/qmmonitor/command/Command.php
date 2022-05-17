@@ -8,6 +8,11 @@ use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\helper\FileHelper;
 use qmmonitor\helper\PhpHelper;
 
+/**
+ * 命令处理类
+ * Class Command
+ * @package qmmonitor\command
+ */
 class Command
 {
     public function __construct()
@@ -25,9 +30,13 @@ class Command
         $this->checkEnvironment();
         //兼容opcache
         PhpHelper::opCacheClear();
-        echo 'Server starting ...', PHP_EOL;
         ConfigurationManager::getInstance()->loadConfig($config);
+        $ack = ConfigurationManager::getInstance()->getConfig('amqp.no_ack');
+        if ($ack) {
+            exit(Color::error('当前版本下必须是消息确认模式，暂时不支持不使用ack'));
+        }
         $this->directoryInit();
+        echo 'monitor starting ...', PHP_EOL;
         $this->commandHandler();
     }
 
@@ -60,7 +69,7 @@ class Command
         //定义临时目录常量
         //defined('MONITOR_TEMP_DIR') or define('MONITOR_TEMP_DIR', $tempDir);
 
-        $logDir = ConfigurationManager::getInstance()->getConfig('log_dir');
+        /*$logDir = ConfigurationManager::getInstance()->getConfig('log_dir');
         if (empty($logDir)) {
             $logDir = MONITOR_ROOT . '/log';
             ConfigurationManager::getInstance()->setConfig('log_dir', $logDir);
@@ -70,7 +79,7 @@ class Command
         if (!is_dir($logDir)) {
             FileHelper::createDirectory($logDir);
         }
-        defined('MONITOR_LOG_DIR') or define('MONITOR_LOG_DIR', $logDir);
+        defined('MONITOR_LOG_DIR') or define('MONITOR_LOG_DIR', $logDir);*/
 
         // 设置默认文件目录值(如果自行指定了目录则优先使用指定的)
         /*if (!Config::getInstance()->getConf('MAIN_SERVER.SETTING.pid_file')) {

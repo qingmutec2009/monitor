@@ -61,10 +61,27 @@ class ConfigurationManager
     /**
      * 获取配置
      * @param string $name
+     * @param null $default 默认值
      * @return array|mixed
      */
-    public function getConfig(string $name)
+    public function getConfig(string $name,$default = null)
     {
+        $name = strtolower($name);
+        if (strpos($name,'.') !== false) {
+            $name    = explode('.', $name);
+            $name[0] = strtolower($name[0]);
+            $config  = $this->config;
+
+            // 按.拆分成多维数组进行判断
+            foreach ($name as $val) {
+                if (isset($config[$val])) {
+                    $config = $config[$val];
+                } else {
+                    return $default;
+                }
+            }
+            return $config;
+        }
         return empty($name) ? $this->config : $this->config[$name] ?? '';
     }
 

@@ -23,4 +23,7 @@ composer命令： swoole process manager for rabbitMQ <br/>
 3.  多进程消费使用cli模式启动,可以随意整合到框架自带的Command命令或自行调用。后台任务可以使用nohup命令。
 4.  生产端注意在配置文件中的queue_run_right_now参数使用就好，为true时将立即执行不会经过队列，主要用来调试。
 5.  注意env文件中的true和false等配置参数转入config时的值类型转换。false和"false"是不一样的。
+6.  后台运行：nohup command &   | nohup ./command >test.log&   |  nohup ./command >>test.log&
+    > 说明：命令执行的结果保存到test.log中 ">"表示覆盖原文件内容（文件的日期也会自动更新），">>"表示追加内容（会另起一行，文件的日期也会自动更新）
+    
 
