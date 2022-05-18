@@ -30,8 +30,17 @@ class Core
         $jobs = $nowQueueConfig['job'];
         foreach ($jobs as $job) {
             //依次执行相关任务
-            $jobObject = new $job();
-            $jobObject->perform($jobArguments);
+            try {
+                $jobObject = new $job();
+                $jobObject->perform($jobArguments);
+            } catch (\Throwable $throwable) {
+                $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
+                if ($exceptionClosure() === true) {
+                    continue;
+                } else {
+                    break;
+                }
+            }
         }
     }
 

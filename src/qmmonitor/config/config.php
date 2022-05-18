@@ -2,7 +2,12 @@
 return [
     //通用设置
     'queue_run_right_now'   => false,
-    'exception',
+    'exception_closure' => function() {
+        //有一个或多个任务时执行时捕获异常或者错误，一旦发现异常或者错误则会回调此方法
+        //返回值如果=true则会continue,如果=false,则会break，结束所有的任务调度
+        echo '我是被错误或异常触发的回调' . PHP_EOL;
+        return true;
+    },
     //exchange
     'exchanges'  => [
         'direct_qm_goods_exchange'  => [

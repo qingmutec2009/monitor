@@ -29,8 +29,8 @@ $message = json_encode($data,JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
 $rabbitMqQueueArguments->setExchange('direct_qm_goods_exchange')
     ->setRouteKey('goods_input')
     ->setQueueName('direct_qm_goods_input_queue');
-$command->put($message,$rabbitMqQueueArguments);*/
-//die(1);
+$command->put($message,$rabbitMqQueueArguments);
+die(1);*/
 //以下测试模拟生产者
 
 //以下测试模拟多进程消费
