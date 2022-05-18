@@ -21,12 +21,12 @@ class Core
 
     /**
      * 执行脚本
+     * @param JobArguments $jobArguments
      * @param array $nowQueueConfig
      * @param $arguments 当前参数信息
      */
-    public function runJob(JobArguments $jobArguments)
+    public function runJob(JobArguments $jobArguments,array $nowQueueConfig)
     {
-        $nowQueueConfig = $jobArguments->getNowQueueConfig();
         $jobs = $nowQueueConfig['job'];
         foreach ($jobs as $job) {
             //依次执行相关任务

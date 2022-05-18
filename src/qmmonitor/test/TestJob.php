@@ -16,13 +16,9 @@ class TestJob extends AbstractJob
 
     public function register($param)
     {
-        // TODO: Implement register() method.
-    }
-
-    public function initialize()
-    {
         $this->params = json_decode($this->params,true);
     }
+
 
     public function handle()
     {
@@ -33,8 +29,13 @@ class TestJob extends AbstractJob
         ];
         Db::table('xfhz_record')->where('record_id',$this->params['record_id'])
             ->update($update);*/
-        echo '以下打印是任务打印'.PHP_EOL;
-        var_dump($this->params);
+        $queueName = $this->jobArguments->getQueueName();
+        echo "当前队列名称{$queueName}".PHP_EOL;
+        //手动确认
+        $this->ack();
+        //var_dump($this->params);
+        //var_dump($this->jobArguments->getConfigurationManager()->getConfig('queue'));
+        //var_dump($this->jobArguments->getChannel());
         //var_dump("更新完成");
     }
 }

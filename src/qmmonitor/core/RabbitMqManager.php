@@ -108,14 +108,20 @@ class RabbitMqManager
         $this->autoCreate();
     }
 
+    /**
+     * 获取连接对象
+     * @return AMQPStreamConnection
+     */
     public function getConnection()
     {
-        $this->connection = new AMQPStreamConnection(
-            $this->host,$this->port,$this->user,$this->password,$this->virtual,
-            $this->insist,$this->loginMethod,$this->loginResponse,$this->locale,
-            $this->connectionTimeout,$this->rwTimeout,$this->context,$this->keepAlive,$this->heartBeat,
-            $this->channelRpcTimeout,$this->sslProtocol
-        );
+        if (empty($this->connection)) {
+            $this->connection = new AMQPStreamConnection(
+                $this->host,$this->port,$this->user,$this->password,$this->virtual,
+                $this->insist,$this->loginMethod,$this->loginResponse,$this->locale,
+                $this->connectionTimeout,$this->rwTimeout,$this->context,$this->keepAlive,$this->heartBeat,
+                $this->channelRpcTimeout,$this->sslProtocol
+            );
+        }
         /*$connection = AMQPStreamConnection::create_connection([
             ['host' => HOST1, 'port' => PORT, 'user' => USER, 'password' => PASS, 'vhost' => VHOST],
             ['host' => HOST2, 'port' => PORT, 'user' => USER, 'password' => PASS, 'vhost' => VHOST]
@@ -124,6 +130,10 @@ class RabbitMqManager
         return $this->connection;
     }
 
+    /**
+     * 获取渠道对象
+     * @return \PhpAmqpLib\Channel\AbstractChannel|AMQPChannel
+     */
     public function getChannel()
     {
         if (empty($this->channel)) {
@@ -183,15 +193,16 @@ class RabbitMqManager
 
     /**
      * 回调
-     * @param string $nowQueueConfig 当前队列配置
+     * @param AMQPChannel $channel 渠道
+     * @param array $nowQueueConfig 当前队列配置
      * @param string $queueName 队列名称
      * @param $workerId 当前工作id 0、1、2、3、4这样
      * @param int $pid 当前父级工作进程id
      * @return \Closure
      */
-    public function consumerCallBack(array $nowQueueConfig,string $queueName,int $workerId,$pid = 0) : \Closure
+    public function consumerCallBack(AMQPChannel $channel,array $nowQueueConfig,string $queueName,int $workerId,$pid = 0) : \Closure
     {
-        return  function (AMQPMessage $msg) use ($nowQueueConfig,$queueName,$workerId,$pid){
+        return  function (AMQPMessage $msg) use ($channel,$nowQueueConfig,$queueName,$workerId,$pid){
             //echo " [workerId={$workerId},pid={$pid}] Received ", $msg->body, "\n";
             //sleep(3);
             //echo "{$workerId}模拟处理完成，即将进入真实的Job执行文件中".PHP_EOL;
@@ -201,11 +212,14 @@ class RabbitMqManager
             $jobArguments->setWorkerId($workerId);
             $jobArguments->setPid($workerId);
             $jobArguments->setQueueName($queueName);
-            $jobArguments->setNowQueueConfig($nowQueueConfig);
+            $jobArguments->setChannel($channel);
+            $jobArguments->setAMQPmessage($msg);
+            $jobArguments->setConfigurationManager(ConfigurationManager::getInstance());
             //处理业务逻辑
-            Core::getInstance()->runJob($jobArguments);
+            Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
             //消息确认
-            if (!$this->getNoAck()) {
+            $authAck = $nowQueueConfig['auto_ack'] ?? true;
+            if ($authAck && !$this->getNoAck()) {
                 $msg->ack();
             }
         };
@@ -218,8 +232,6 @@ class RabbitMqManager
      */
     public function put($message,RabbitMqQueueArguments $rabbitMqQueueArguments)
     {
-        //获取队列名称及Job绑定信息
-        $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
         $runRightNow = (bool)ConfigurationManager::getInstance()->getConfig('queue_run_right_now');
         if ($runRightNow) {
             $queueName = $rabbitMqQueueArguments->getQueueName();
@@ -233,16 +245,20 @@ class RabbitMqManager
                 //检测参数是否正常
                 ConfigurationManager::getInstance()->checkQueueExist($rabbitMqQueueArguments);
             }
+            //获取队列名称及Job绑定信息
+            $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
             $nowQueueConfig = $queuesConfig[$queueName] ?? [];
             if (empty($nowQueueConfig)) throw new \Exception("当前配置queue中缺少{$queueName}的相应配置");
             //设置参数
             $jobArguments = new JobArguments();
-            $jobArguments->setQueueName($queueName)->setNowQueueConfig($nowQueueConfig)->setMessage($message);
+            $jobArguments->setQueueName($queueName)
+                ->setMessage($message)
+                ->setConfigurationManager(ConfigurationManager::getInstance());
             if (PHP_SAPI == 'cli') {
                 $jobArguments->setPid(posix_getpid());
             }
             //执行任务
-            Core::getInstance()->runJob($jobArguments);
+            Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
             return $runRightNow;
         }
         //投入到rabbitMq

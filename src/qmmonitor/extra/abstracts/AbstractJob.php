@@ -3,6 +3,8 @@
 
 namespace qmmonitor\extra\abstracts;
 
+use PhpAmqpLib\Message\AMQPMessage;
+use qmmonitor\core\ConfigurationManager;
 use qmmonitor\extra\pojo\JobArguments;
 
 /**
@@ -20,6 +22,7 @@ abstract class AbstractJob
 
     /**
      * @var \qmmonitor\extra\pojo\JobArguments
+     * 当config中的queue_run_right_now参数=true时，此对象中只有消息本体和队列相关参数有效
      */
     protected $jobArguments;
 
@@ -32,11 +35,10 @@ abstract class AbstractJob
      */
     public final function perform(?JobArguments $jobArguments = null)
     {
+        //初始化数据属性
         $this->initAttr($jobArguments);
         //注册、兼容旧版本
         $this->register($this->params);
-        //初始化
-        $this->initialize();
         //执行
         $this->handle();
     }
@@ -54,41 +56,34 @@ abstract class AbstractJob
     }
 
     /**
-     * 框架日记
-     *
-     * @param $message
-     * @param $type
+     * 用于手动确认的方法
+     * @param AMQPMessage|null $AMQPMessage
+     * @return bool
      */
-    protected function jobLog(string $message,$type)
+    protected function ack(?AMQPMessage $AMQPMessage = null)
     {
-        $path   = MONITOR_LOG_DIR.date('Y-m-d').'-'.$type.'.log';
-        $string = $message."\n";
-        file_put_contents($path,$string,FILE_APPEND);
+        if (empty($AMQPMessage)) $AMQPMessage = $this->jobArguments->getAMQPmessage();
+        $queuesConfig = $this->jobArguments->getConfigurationManager()->getConfig('queue');
+        $queueConfig = $queuesConfig[$this->jobArguments->getQueueName()];
+        $autoAck = (bool)$queueConfig['auto_ack'] ?? true;
+        //如果是自动确认则跳过,如果不是自动确认则会调用确认方法
+        if (!$autoAck) {
+            $amqpConfig = $this->jobArguments->getConfigurationManager()->getConfig('amqp');
+            if (!$amqpConfig['no_ack']) {
+                $AMQPMessage->ack();
+            }
+        }
+        return $autoAck;
     }
 
     /**
-     * 队列日志
-     * @param string $message
-     */
-    protected function infoLog(string $message)
-    {
-        $path   = MONITOR_LOG_DIR.date('Y-m-d').$this->jobArguments->getQueueName().'.log';
-        $string = date('Y-m-d H:i:s').' '.$message."\n";
-        file_put_contents($path, $string, FILE_APPEND);
-    }
-    /**
      * 注册参数
-     * 注册、兼容旧版本
+     * 注册、兼容旧版本 ，也可以当作初始化函数
      * @param $param
      * @return mixed
      */
     abstract public function register($param);
 
-    /**
-     * 初始化
-     * @return mixed
-     */
-    abstract public function initialize();
 
     /**
      * 任务入口

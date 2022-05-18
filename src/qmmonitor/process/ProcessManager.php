@@ -21,10 +21,10 @@ class ProcessManager extends AbstractProcess
 
     /**
      * 多进程方式运行rabbitMq
-     * @param bool $enableCoroutine
-     * @param string $queueName
-     * @param array $amqpConfig
-     * @param array $nowQueueConfig
+     * @param bool $enableCoroutine 是否开启协程
+     * @param string $queueName 队列名称
+     * @param array $amqpConfig mq连接配置参数
+     * @param array $nowQueueConfig 当前队列配置参数
      * @return Manager|null
      */
     public function executeRabbitMq(bool $enableCoroutine, string $queueName, array $amqpConfig, array $nowQueueConfig)
@@ -32,18 +32,16 @@ class ProcessManager extends AbstractProcess
         /**@var $pm \Swoole\Process\Manager **/
         $pm = $this->process;
         $pm->addBatch($nowQueueConfig['count'],function (Pool $pool,$workerId) use ($queueName,$amqpConfig,$nowQueueConfig){
-            //防止异常退出
-            //$running = true;
             $pid = posix_getpid();
-            //$this->signal($running, $pool);
             $processName = "php-work-{$queueName}-{$workerId}";
             $this->setProcessName("php-work-{$queueName}-{$workerId}");
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . PHP_EOL);
+            //设置channel
+            $channel = RabbitMqManager::getInstance($amqpConfig)->qos();
             //创建回调
-            $callBack = RabbitMqManager::getInstance($amqpConfig)
-                ->consumerCallBack($nowQueueConfig,$queueName,$workerId,$pid);
-            //设置channel并消费
-            $channel = RabbitMqManager::getInstance()->qos();
+            $callBack = RabbitMqManager::getInstance()
+                ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);
+            //消费
             RabbitMqManager::getInstance()->consumer($queueName, $callBack,$channel);
         },$enableCoroutine);
         $this->process = $pm;

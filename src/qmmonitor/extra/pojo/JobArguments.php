@@ -1,6 +1,10 @@
 <?php
 namespace qmmonitor\extra\pojo;
 
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Message\AMQPMessage;
+use qmmonitor\core\ConfigurationManager;
+
 /**
  * 任务参数实体类
  * Class JobArguments
@@ -28,11 +32,23 @@ class JobArguments
      * @var string
      */
     private $queueName = '';
+
     /**
-     * 当前队列配置，来源于queue
-     * @var array
+     * AMQPChannel
+     * @var null
      */
-    private $nowQueueConfig = [];
+    private $channel = null;
+
+    /**
+     * AMQPMessage
+     * @var null
+     */
+    private $AMQPmessage = null;
+
+    /**
+     * @var ConfigurationManager
+     */
+    private $configurationManager = null;
 
     public function __construct()
     {
@@ -112,20 +128,56 @@ class JobArguments
     }
 
     /**
-     * @return array
+     * @return AMQPChannel
      */
-    public function getNowQueueConfig(): array
+    public function getChannel() : AMQPChannel
     {
-        return $this->nowQueueConfig;
+        return $this->channel;
     }
 
     /**
-     * @param array $nowQueueConfig
+     * @param AMQPChannel $channel
      * @return $this
      */
-    public function setNowQueueConfig(array $nowQueueConfig): self
+    public function setChannel(AMQPChannel $channel): self
     {
-        $this->nowQueueConfig = $nowQueueConfig;
+        $this->channel = $channel;
+        return $this;
+    }
+
+    /**
+     * @return AMQPMessage
+     */
+    public function getAMQPmessage() : AMQPMessage
+    {
+        return $this->AMQPmessage;
+    }
+
+    /**
+     * @param AMQPMessage $AMQPmessage
+     * @return $this
+     */
+    public function setAMQPmessage(AMQPMessage $AMQPmessage): self
+    {
+        $this->AMQPmessage = $AMQPmessage;
+        return $this;
+    }
+
+    /**
+     * @return ConfigurationManager
+     */
+    public function getConfigurationManager(): ?ConfigurationManager
+    {
+        return $this->configuration;
+    }
+
+    /**
+     * @param ConfigurationManager $configuration
+     * @return $this
+     */
+    public function setConfigurationManager(?ConfigurationManager $configuration): self
+    {
+        $this->configuration = $configuration;
         return $this;
     }
 }

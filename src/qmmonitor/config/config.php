@@ -1,11 +1,8 @@
 <?php
 return [
-    //临时目录
-    //'temp_dir'    => 'temp',
-    //'log_dir'     => 'log',
-    //'pid_file'      => 'pid',
+    //通用设置
     'queue_run_right_now'   => false,
-    //'daemon'        => false,
+    'exception',
     //exchange
     'exchanges'  => [
         'direct_qm_goods_exchange'  => [
@@ -59,33 +56,38 @@ return [
         //公共模块队列
         'fanout_qm_image_upload_queue' => [
             'job' => [
+                //可以多个任务
                 \qmmonitor\test\TestJob::class,
             ],
-            //'INTERVAL' => 5,
             'count' => 2,
-            'auto_create'   => true,
+            'auto_create'   => true,//为true时将自动做创建绑定关系，为false时将由使用者自行维护
+            'extend_params' => [],//附带的自定义参数
+            'auto_ack'      => true,//为true时将在执行完所有任务后自动确认，为false时将需要人为控制确认,默认=true
         ],
         'direct_qm_goods_input_queue' => [
             'job' => [
+                //可以多个任务
                 \qmmonitor\test\TestJob::class,
             ],
-            //'INTERVAL' => 5,
             'count' => 2,
-            'auto_create'   => true,
+            'auto_create'   => true,//为true时将自动做创建绑定关系，为false时将由使用者自行维护
+            'extend_params' => [],//附带的自定义参数
+            'auto_ack'      => false,//为true时将在执行完所有任务后自动确认，为false时将需要人为控制确认,默认=true
         ],
     ],
 
     'amqp'      => [
+        //服务本身连接配置
         'host'          => '127.0.0.1',
         'port'          => 5672,
         'user'          => 'root',
         'password'      => '584520Wang',
         'virtual'       => '/',
-        //生产
+        //生产API参数配置
         'keep_alive'    => true,//连接保持
         'connection_timeout'    => 60,//连接超时时间
         'heart_beat'    => 15,//心跳检测
-        //消费
+        //消费API参数配置
         'consumer_tag'  => '',//消费者标识符
         'no_local'      => false,//不接受此使用者发布的消息
         'no_ack'        => false,//使用者使用自动确认模式,processManager模式下必须为false
