@@ -63,9 +63,21 @@ class PhpHelper
      * PhpHelper::kill("php-work");
      * @param string $str
      */
-    public static function kill(string $str)
+    public static function killAll(string $str)
     {
-        $command = "kill -s 9  `ps -aux | grep {$str} | awk '{print $2}'`";//php-work
+        $command = "kill -s 15  `ps -aux | grep {$str} | awk '{print $2}'`";//php-work
+        if (self::isLinux() && self::isCli()) {
+            exec($command,$output,$resultCode);
+        }
+    }
+
+    /**
+     *
+     * @param $pid
+     */
+    public static function kill($pid)
+    {
+        $command = "kill -15 {$pid}";
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
         }
@@ -84,6 +96,15 @@ class PhpHelper
             return (bool)$val;
         }
         return false;
+    }
+
+    /**
+     * 获取主进程id
+     * @return int
+     */
+    public static function getPid()
+    {
+        return posix_getpid();
     }
 
 }

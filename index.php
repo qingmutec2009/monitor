@@ -24,19 +24,19 @@ $data = [
 $command = new \qmmonitor\command\Command();
 //处理message
 $message = json_encode($data,JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
-$message = file_get_contents('1.txt');
+//$message = file_get_contents('1.txt');
 //direct模式发布
 //$setting = ['exchange'=>'direct_qm_goods_exchange','route_key'=>'goods_input',''];
-$rabbitMqQueueArguments = new RabbitMqQueueArguments();
+/*$rabbitMqQueueArguments = new RabbitMqQueueArguments();
 $rabbitMqQueueArguments->setExchange('direct_qm_goods_exchange')
     ->setRouteKey('goods_input')
     ->setQueueName('direct_qm_goods_input_queue');
 $command->put($message,$rabbitMqQueueArguments);
-die(1);
+die(1);*/
 //以下测试模拟生产者
 
 //以下测试模拟多进程消费
-$command->run();
+$command->start();
 
 //
 

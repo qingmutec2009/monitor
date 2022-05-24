@@ -82,7 +82,7 @@ class ConfigurationManager
             }
             return $config;
         }
-        return empty($name) ? $this->config : $this->config[$name] ?? '';
+        return empty($name) ? $this->config : $this->config[$name] ?? $default;
     }
 
     /**

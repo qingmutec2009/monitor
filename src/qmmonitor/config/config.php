@@ -1,6 +1,8 @@
 <?php
 return [
     //通用设置
+    //'temp_dir'  => '',
+    //'pid_file'  => '',
     'queue_run_right_now'   => false,
     'exception_closure' => function(\Throwable $throwable) {
         //有一个或多个任务时执行时捕获异常或者错误，一旦发现异常或者错误则会回调此方法

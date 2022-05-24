@@ -25,8 +25,9 @@ class Command
      * @param array $config 配置文件
      * @param array $config
      */
-    public function run(array $config = [])
+    public function start(array $config = [])
     {
+
         $this->checkEnvironment();
         //兼容opcache
         PhpHelper::opCacheClear();
@@ -45,6 +46,8 @@ class Command
      */
     public function commandHandler()
     {
+        $pid = PhpHelper::getPid();
+        file_put_contents(ConfigurationManager::getInstance()->getConfig('pid_file'),$pid);
         Core::getInstance()->processManagerConsumerForMq();
     }
 
@@ -53,21 +56,17 @@ class Command
      */
     private function directoryInit()
     {
-        //创建临时目录    请以绝对路径，不然守护模式运行会有问题
-        /*$tempDir = ConfigurationManager::getInstance()->getConfig('temp_dir');
-        if (empty($tempDir)) {
-            //如果没有指定TEMP_DIR则会默认使用根目录下的Temp来作为临时目录
-            $tempDir = MONITOR_ROOT . '/temp';
-            ConfigurationManager::getInstance()->setConfig('temp_dir', $tempDir);
-        } else {
-            $tempDir = rtrim($tempDir, '/');
-        }*/
+        //创建临时目录
+        $tempDir = ConfigurationManager::getInstance()->getConfig('temp_dir',MONITOR_ROOT.'/temp');
+        $tempDir = rtrim($tempDir, '/');
+        //如果没有指定TEMP_DIR则会默认使用根目录下的Temp来作为临时目录
+        ConfigurationManager::getInstance()->setConfig('temp_dir', $tempDir);
         //如果临时目录不存在则会创建临时目录
-        /*if (!is_dir($tempDir)) {
+        if (!is_dir($tempDir)) {
             FileHelper::createDirectory($tempDir);
-        }*/
+        }
         //定义临时目录常量
-        //defined('MONITOR_TEMP_DIR') or define('MONITOR_TEMP_DIR', $tempDir);
+        defined('MONITOR_TEMP_DIR') or define('MONITOR_TEMP_DIR', $tempDir);
 
         /*$logDir = ConfigurationManager::getInstance()->getConfig('log_dir');
         if (empty($logDir)) {
@@ -82,10 +81,10 @@ class Command
         defined('MONITOR_LOG_DIR') or define('MONITOR_LOG_DIR', $logDir);*/
 
         // 设置默认文件目录值(如果自行指定了目录则优先使用指定的)
-        /*if (!Config::getInstance()->getConf('MAIN_SERVER.SETTING.pid_file')) {
-            Config::getInstance()->setConf('MAIN_SERVER.SETTING.pid_file', $tempDir . '/pid.pid');
+        if (empty(ConfigurationManager::getInstance()->getConfig('pid_file'))) {
+            ConfigurationManager::getInstance()->setConfig('pid_file', $tempDir . '/pid.pid');
         }
-        if (!Config::getInstance()->getConf('MAIN_SERVER.SETTING.log_file')) {
+        /*if (!Config::getInstance()->getConf('MAIN_SERVER.SETTING.log_file')) {
             Config::getInstance()->setConf('MAIN_SERVER.SETTING.log_file', $logDir . '/swoole.log');
         }*/
         return $this;
@@ -126,5 +125,38 @@ class Command
     {
         ConfigurationManager::getInstance()->loadConfig($config);
         return Core::getInstance()->put($message,$rabbitMqQueueArguments,$config);
+    }
+
+    /**
+     * 停止进程
+     * @param array $config
+     * @throws \Exception
+     */
+    public function stop(array $config = [])
+    {
+        ConfigurationManager::getInstance()->loadConfig($config);
+        $this->directoryInit();
+        $file = ConfigurationManager::getInstance()->getConfig('pid_file');
+        if (!is_file($file)) {
+            echo (Color::error("pid文件不存在，可能被删除").PHP_EOL);
+        } else {
+            $pid = file_get_contents($file);
+            PhpHelper::kill($pid);
+            unlink($file);
+        }
+    }
+
+    /**
+     * 重启
+     * @param array $config
+     * @throws \Exception
+     */
+    public function restart(array $config = [])
+    {
+        echo Color::notice("closing").PHP_EOL;
+        $this->stop($config);
+        echo Color::notice("starting").PHP_EOL;
+        $this->start($config);
+        echo Color::notice("application monitor already started.....").PHP_EOL;
     }
 }
