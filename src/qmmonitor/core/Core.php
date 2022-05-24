@@ -35,7 +35,7 @@ class Core
                 $jobObject->perform($jobArguments);
             } catch (\Throwable $throwable) {
                 $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
-                if ($exceptionClosure() === true) {
+                if ($exceptionClosure($throwable) === true) {
                     continue;
                 } else {
                     break;

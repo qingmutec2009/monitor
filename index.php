@@ -20,28 +20,31 @@ $data = [
     ['id' => 2,'name' => 'b',],
     ['id' => 3,'name' => 'c',],
 ];
+//test();die('over');
 $command = new \qmmonitor\command\Command();
 //处理message
 $message = json_encode($data,JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
+$message = file_get_contents('1.txt');
 //direct模式发布
 //$setting = ['exchange'=>'direct_qm_goods_exchange','route_key'=>'goods_input',''];
-/*$rabbitMqQueueArguments = new RabbitMqQueueArguments();
+$rabbitMqQueueArguments = new RabbitMqQueueArguments();
 $rabbitMqQueueArguments->setExchange('direct_qm_goods_exchange')
     ->setRouteKey('goods_input')
     ->setQueueName('direct_qm_goods_input_queue');
 $command->put($message,$rabbitMqQueueArguments);
-die(1);*/
+die(1);
 //以下测试模拟生产者
 
 //以下测试模拟多进程消费
 $command->run();
 
+//
 
 function test()
 {
-    for ($i = 0;$i < 10000;$i ++) {
+    @unlink('1.txt');
+    for ($i = 0;$i < 15000;$i ++) {
         file_put_contents('1.txt',$i,FILE_APPEND);//67.2KB
-        file_put_contents('1.txt','我',FILE_APPEND);
     }
     //var_dump(filesize('1.txt')/1024);die();
     $content = file_get_contents('1.txt');

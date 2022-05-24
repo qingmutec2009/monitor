@@ -148,7 +148,7 @@ class JobArguments
     /**
      * @return AMQPMessage
      */
-    public function getAMQPmessage() : AMQPMessage
+    public function getAMQPmessage() : ?AMQPMessage
     {
         return $this->AMQPmessage;
     }

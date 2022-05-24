@@ -60,9 +60,13 @@ abstract class AbstractJob
      * @param AMQPMessage|null $AMQPMessage
      * @return bool
      */
-    protected function ack(?AMQPMessage $AMQPMessage = null)
+    protected function ack(?AMQPMessage $AMQPMessage = null) : bool
     {
+        //如果是非异步模式则返回false
+        $queueRunRightNow = $this->jobArguments->getConfigurationManager()->getConfig('queue_run_right_now');
+        if ($queueRunRightNow) return false;
         if (empty($AMQPMessage)) $AMQPMessage = $this->jobArguments->getAMQPmessage();
+        //获取当前队列是否是手动确认模式
         $queuesConfig = $this->jobArguments->getConfigurationManager()->getConfig('queue');
         $queueConfig = $queuesConfig[$this->jobArguments->getQueueName()];
         $autoAck = (bool)$queueConfig['auto_ack'] ?? true;
@@ -71,9 +75,10 @@ abstract class AbstractJob
             $amqpConfig = $this->jobArguments->getConfigurationManager()->getConfig('amqp');
             if (!$amqpConfig['no_ack']) {
                 $AMQPMessage->ack();
+                return true;
             }
         }
-        return $autoAck;
+        return false;
     }
 
     /**
