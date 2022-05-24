@@ -1,7 +1,7 @@
 <?php
 namespace qmmonitor\exception;
 
-class MonitorException extends Exception
+class MonitorException extends \Exception
 {
 
 }

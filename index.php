@@ -36,3 +36,14 @@ die(1);*/
 //以下测试模拟多进程消费
 $command->run();
 
+
+function test()
+{
+    for ($i = 0;$i < 10000;$i ++) {
+        file_put_contents('1.txt',$i,FILE_APPEND);//67.2KB
+        file_put_contents('1.txt','我',FILE_APPEND);
+    }
+    //var_dump(filesize('1.txt')/1024);die();
+    $content = file_get_contents('1.txt');
+    var_dump(mb_strlen($content) / 1024);die();
+}
