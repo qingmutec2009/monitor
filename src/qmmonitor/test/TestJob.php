@@ -31,7 +31,6 @@ class TestJob extends AbstractJob
             ->update($update);*/
         $queueName = $this->jobArguments->getQueueName();
         echo "当前队列名称{$queueName}".PHP_EOL;
-        $a
         //手动确认
         $this->ack();
         //var_dump($this->params);
