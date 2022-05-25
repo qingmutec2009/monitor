@@ -216,8 +216,20 @@ class RabbitMqManager
             $jobArguments->setChannel($channel);
             $jobArguments->setAMQPmessage($msg);
             $jobArguments->setConfigurationManager(ConfigurationManager::getInstance());
-            //处理业务逻辑
-            Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
+            $isSuccess = true;
+            //重试次数，根据配置而定默认=3
+            for ($i = 0;$i < ConfigurationManager::getInstance()->getConfig('retry'); $i ++) {
+                //处理业务逻辑
+                if ($isSuccess = Core::getInstance()->runJob($jobArguments,$nowQueueConfig)) {
+                    break;
+                }
+            }
+            if (!$isSuccess) {
+                //如果重试结果依然是失败的，则会调起
+                $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
+                $throwable = Core::getInstance()->getThrowable();
+                $exceptionClosure($throwable,$msg);
+            }
             //消息确认
             $authAck = $nowQueueConfig['auto_ack'] ?? true;
             if ($authAck && !$this->getNoAck()) {

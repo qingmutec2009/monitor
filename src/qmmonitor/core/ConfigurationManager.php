@@ -36,6 +36,7 @@ class ConfigurationManager
             if (empty($config)) exit(Color::error("当前默认配置文件内容为空").PHP_EOL);
         }
         $this->config = $config;
+        $this->commonConfig();
         return $config;
     }
 
@@ -261,5 +262,18 @@ class ConfigurationManager
                 exit(Color::error('路由key配置异常'));
             }
         }
+    }
+
+    /**
+     * 通用配置初始化
+     */
+    public function commonConfig()
+    {
+        $retry = (int)$this->config['retry'] ?? 1;
+        $this->config['retry'] = $retry;
+        $tempDir = $this->config['temp_dir'] ?? 'temp';
+        $this->config['temp_dir'] = $tempDir;
+        $pidFile = $this->config['pid_file'] ?? 'pid.pid';
+        $this->config['pid_file'] = $tempDir.DIRECTORY_SEPARATOR.$pidFile;
     }
 }

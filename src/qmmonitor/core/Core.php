@@ -15,6 +15,8 @@ class Core
 {
     use Singleton;
 
+    private $throwable;
+
     public function __construct()
     {
     }
@@ -25,23 +27,21 @@ class Core
      * @param array $nowQueueConfig
      * @param $arguments 当前参数信息
      */
-    public function runJob(JobArguments $jobArguments,array $nowQueueConfig)
+    public function runJob(JobArguments $jobArguments,array $nowQueueConfig) : bool
     {
         $jobs = $nowQueueConfig['job'];
+        $isSuccess = true;
         foreach ($jobs as $job) {
             //依次执行相关任务
             try {
                 $jobObject = new $job();
                 $jobObject->perform($jobArguments);
             } catch (\Throwable $throwable) {
-                $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
-                if ($exceptionClosure($throwable) === true) {
-                    continue;
-                } else {
-                    break;
-                }
+                $isSuccess = false;
+                $this->setThrowable($throwable);
             }
         }
+        return $isSuccess;
     }
 
     /**
@@ -74,6 +74,24 @@ class Core
         //ConfigurationManager::getInstance()->loadConfig($config);
         $connectionConfig = ConfigurationManager::getInstance()->getConfig('amqp');
         return \qmmonitor\core\RabbitMqManager::getInstance($connectionConfig)->put($message,$rabbitMqQueueArguments);
+    }
+
+    /**
+     * @return \Throwable
+     */
+    public function getThrowable() : \Throwable
+    {
+        return $this->throwable;
+    }
+
+    /**
+     * @param \Throwable $throwable
+     * @return $this
+     */
+    public function setThrowable(\Throwable $throwable) : self
+    {
+        $this->throwable = $throwable;
+        return $this;
     }
 
 
