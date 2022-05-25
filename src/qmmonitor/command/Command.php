@@ -15,6 +15,8 @@ use qmmonitor\helper\PhpHelper;
  */
 class Command
 {
+    const APPLICATION_NAME = 'monitor';
+
     public function __construct()
     {
         defined('SWOOLE_VERSION') or define('SWOOLE_VERSION', intval(phpversion('swoole')));
@@ -37,7 +39,7 @@ class Command
             exit(Color::error('当前版本下必须是消息确认模式，暂时不支持不使用ack'));
         }
         $this->directoryInit();
-        echo 'monitor starting ...', PHP_EOL;
+        echo self::APPLICATION_NAME.' starting ...', PHP_EOL;
         $this->commandHandler();
     }
 
@@ -157,6 +159,16 @@ class Command
         $this->stop($config);
         echo Color::notice("starting").PHP_EOL;
         $this->start($config);
-        echo Color::notice("application monitor already started.....").PHP_EOL;
+        echo Color::notice("application ".self::APPLICATION_NAME." already started.....").PHP_EOL;
+    }
+
+    /**
+     * 列举出当前任务清单
+     * @param string $findStr
+     * @return array
+     */
+    public function list(string $findStr = '') : array
+    {
+        return PhpHelper::getWorkList($findStr);
     }
 }

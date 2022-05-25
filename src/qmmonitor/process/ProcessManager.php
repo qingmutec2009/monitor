@@ -1,6 +1,7 @@
 <?php
 namespace qmmonitor\process;
 
+use qmmonitor\command\Command;
 use qmmonitor\core\RabbitMqManager;
 use qmmonitor\extra\abstracts\AbstractProcess;
 use qmmonitor\extra\traits\Singleton;
@@ -33,8 +34,9 @@ class ProcessManager extends AbstractProcess
         $pm = $this->process;
         $pm->addBatch($nowQueueConfig['count'],function (Pool $pool,$workerId) use ($queueName,$amqpConfig,$nowQueueConfig){
             $pid = posix_getpid();
-            $processName = "php-work-{$queueName}-{$workerId}";
-            $this->setProcessName("php-work-{$queueName}-{$workerId}");
+            $applicationName = Command::APPLICATION_NAME;
+            $processName = "php-work-{$applicationName}-{$queueName}-{$workerId}";
+            $this->setProcessName($processName);
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . PHP_EOL);
             //设置channel
             $channel = RabbitMqManager::getInstance($amqpConfig)->qos();

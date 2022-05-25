@@ -107,4 +107,25 @@ class PhpHelper
         return posix_getpid();
     }
 
+    /**
+     * 获取工作进程列表
+     * @param string $findStr
+     * @return array
+     */
+    public static function getWorkList(string $findStr = '') : array
+    {
+        //如果未传递则会默认取当前应用名称
+        if (empty($findStr)) $findStr = \qmmonitor\command\Command::APPLICATION_NAME;
+        exec("ps -A -opid -oargs | grep {$findStr}",$output);
+        $result = [];
+        if (!empty($output) && is_array($output)) {
+            foreach ($output as $item) {
+                if (strpos($item,'php-work-'.$findStr) !== false) {
+                    array_push($result,$item);
+                }
+            }
+        }
+        return $result;
+    }
+
 }
