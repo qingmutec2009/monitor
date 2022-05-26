@@ -1,8 +1,10 @@
 <?php
 namespace qmmonitor\test;
 
+use qmmonitor\command\Command;
 use qmmonitor\extra\abstracts\AbstractJob;
 use qmmonitor\extra\pojo\JobArguments;
+use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use think\facade\Db;
 
 /**
@@ -16,18 +18,25 @@ class TestJob extends AbstractJob
 
     public function register($param)
     {
-        $this->params = json_decode($this->params,true);
+        $res = @json_decode($this->params,true);
+        $this->params = empty($res) ? $this->params : $res;
     }
 
 
     public function handle()
     {
-
         $queueName = $this->jobArguments->getQueueName();
-        //echo "当前队列名称{$queueName}".PHP_EOL;
+        echo "当前队列名称{$queueName}输出:".$this->params.PHP_EOL;
         //file_put_contents('consumer.txt',$queueName.'+'.date('Y-m-d H:i:s'));
 
-
+        //测试转入其它队列
+        $command = new Command();
+        if ($queueName == 'direct_qm_goods_input_queue') {
+            $rabbitMqQueueArguments = new RabbitMqQueueArguments();
+            $rabbitMqQueueArguments->setQueueName('fanout_qm_image_upload_queue')
+                ->setExchange('fanout_qm_image_exchange');
+            $command->put($this->params,$rabbitMqQueueArguments);
+        }
         //手动确认
         $this->ack();
         //var_dump($this->params);
