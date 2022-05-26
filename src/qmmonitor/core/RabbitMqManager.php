@@ -100,9 +100,6 @@ class RabbitMqManager
         $this->noWait = empty($config['nowait']) ? $this->noWait : $config['nowait'];
         $this->ticket = empty($config['ticket']) ? $this->ticket : $config['ticket'];
         $this->arguments = empty($config['arguments']) ? $this->arguments : $config['arguments'];
-        //检测配置是否正常
-        ConfigurationManager::getInstance()->checkExchangeConfig();
-        ConfigurationManager::getInstance()->checkQueueConfig();
         //初始化连接
         $this->getChannel();
         //是否自动完成交换机、队列及绑定
@@ -186,7 +183,7 @@ class RabbitMqManager
             RabbitMqManager::getInstance()->getNoWait(),
             $callBack
         );
-        #监听消息，一有消息，立马就处理,多进程中不使用，
+        #监听消息
         while(count($channel->callbacks)) {
             $channel->wait();
         }

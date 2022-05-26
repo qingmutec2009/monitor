@@ -29,7 +29,9 @@ class Command
      */
     public function start(array $config = [])
     {
-
+        //是否有启动相关进程
+        $list =PhpHelper::getWorkList();
+        if (!empty($list)) exit(Color::error('不能重复启动'));
         $this->checkEnvironment();
         //兼容opcache
         PhpHelper::opCacheClear();
@@ -39,7 +41,7 @@ class Command
             exit(Color::error('当前版本下必须是消息确认模式，暂时不支持不使用ack'));
         }
         $this->directoryInit();
-        echo self::APPLICATION_NAME.' starting ...', PHP_EOL;
+        echo Color::notice(self::APPLICATION_NAME.' starting ...').PHP_EOL;
         $this->commandHandler();
     }
 
@@ -146,6 +148,12 @@ class Command
             PhpHelper::kill($pid);
             unlink($file);
         }
+        //防止意外僵尸进程
+        $list = PhpHelper::getWorkList();
+        if (!empty($list)) {
+            PhpHelper::killAll(Command::APPLICATION_NAME);
+        }
+        echo Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL;
     }
 
     /**

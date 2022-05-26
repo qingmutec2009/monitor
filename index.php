@@ -1,20 +1,8 @@
 <?php
-//include 'vendor/autoload.php';
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 
 include "src/qmmonitor/bootstrap.php";
-
-/*$config = [
-    'host'          => '127.0.0.1',
-    'port'          => 5672,
-    'user'          => 'root',
-    'password'      => '584520Wang',
-    'virtual'       => '/',
-    'keep_alive'    => true,
-    'connection_timeout'    => 60,
-    'heart_beat'    => 15,
-
-];*/
+//    /bin/sh ./start.sh
 $data = [
     ['id' => 1,'name' => 'a',],
     ['id' => 2,'name' => 'b',],
@@ -33,20 +21,6 @@ $rabbitMqQueueArguments->setExchange('direct_qm_goods_exchange')
     ->setQueueName('direct_qm_goods_input_queue');
 $command->put($message,$rabbitMqQueueArguments);
 die(1);*/
-//以下测试模拟生产者
 
 //以下测试模拟多进程消费
 $command->start();
-
-//
-
-function test()
-{
-    @unlink('1.txt');
-    for ($i = 0;$i < 15000;$i ++) {
-        file_put_contents('1.txt',$i,FILE_APPEND);//67.2KB
-    }
-    //var_dump(filesize('1.txt')/1024);die();
-    $content = file_get_contents('1.txt');
-    var_dump(mb_strlen($content) / 1024);die();
-}

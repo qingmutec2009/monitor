@@ -23,14 +23,11 @@ class TestJob extends AbstractJob
     public function handle()
     {
 
-        /*$update = [
-            'worker_id' => $this->jobArguments->getWorkerId(),
-            'queue_name'    => $this->jobArguments->getQueueName(),
-        ];
-        Db::table('xfhz_record')->where('record_id',$this->params['record_id'])
-            ->update($update);*/
         $queueName = $this->jobArguments->getQueueName();
-        echo "当前队列名称{$queueName}".PHP_EOL;
+        //echo "当前队列名称{$queueName}".PHP_EOL;
+        //file_put_contents('consumer.txt',$queueName.'+'.date('Y-m-d H:i:s'));
+
+
         //手动确认
         $this->ack();
         //var_dump($this->params);

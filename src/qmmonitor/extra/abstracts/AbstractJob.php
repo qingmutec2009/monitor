@@ -9,6 +9,7 @@ use qmmonitor\extra\pojo\JobArguments;
 
 /**
  * 工作基类
+ * 子类继承时且在异步时注意不要使用如halt()这样可能会引起中断的操作
  * Class AbstractJob
  * @package qmmonitor\extra\abstracts
  */

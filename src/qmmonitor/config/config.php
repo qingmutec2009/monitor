@@ -14,6 +14,7 @@ return [
         //var_dump($throwable->getMessage());
         //var_dump($throwable->getFile());
         //var_dump($throwable->getLine());
+        file_put_contents('exception.txt',$message->getBody());
         $message->ack();
         return true;
     },

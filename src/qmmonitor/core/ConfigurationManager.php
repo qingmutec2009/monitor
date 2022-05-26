@@ -18,6 +18,7 @@ class ConfigurationManager
 
     public function __construct()
     {
+
     }
 
     /**
@@ -37,6 +38,8 @@ class ConfigurationManager
         }
         $this->config = $config;
         $this->commonConfig();
+        $this->checkExchangeConfig();
+        $this->checkQueueConfig();
         return $config;
     }
 

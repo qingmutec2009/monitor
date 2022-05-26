@@ -65,7 +65,7 @@ class PhpHelper
      */
     public static function killAll(string $str)
     {
-        $command = "kill -s 15  `ps -aux | grep {$str} | awk '{print $2}'`";//php-work
+        $command = "kill -s 15  `ps -aux | grep {$str} | awk '{print $2}'`";
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
         }
@@ -116,12 +116,14 @@ class PhpHelper
     {
         //如果未传递则会默认取当前应用名称
         if (empty($findStr)) $findStr = \qmmonitor\command\Command::APPLICATION_NAME;
-        exec("ps -A -opid -oargs | grep {$findStr}",$output);
         $result = [];
-        if (!empty($output) && is_array($output)) {
-            foreach ($output as $item) {
-                if (strpos($item,'php-work-'.$findStr) !== false) {
-                    array_push($result,$item);
+        if (self::isLinux() && self::isCli()) {
+            exec("ps -A -opid -oargs | grep {$findStr}",$output);
+            if (!empty($output) && is_array($output)) {
+                foreach ($output as $item) {
+                    if (strpos($item,'php-work-'.$findStr) !== false) {
+                        array_push($result,$item);
+                    }
                 }
             }
         }
