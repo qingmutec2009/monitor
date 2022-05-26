@@ -31,12 +31,13 @@ class TestJob extends AbstractJob
 
         //测试转入其它队列
         $command = new Command();
-        if ($queueName == 'direct_qm_goods_input_queue') {
+        /*if ($queueName == 'direct_qm_goods_input_queue') {
             $rabbitMqQueueArguments = new RabbitMqQueueArguments();
             $rabbitMqQueueArguments->setQueueName('fanout_qm_image_upload_queue')
                 ->setExchange('fanout_qm_image_exchange');
             $command->put($this->params,$rabbitMqQueueArguments);
-        }
+        }*/
+        sleep(1);
         //手动确认
         $this->ack();
         //var_dump($this->params);

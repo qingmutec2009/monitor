@@ -5,6 +5,7 @@ namespace qmmonitor\helper;
 use app\mo\console\Command;
 use app\mq\config\ConfigManager;
 use qmmonitor\core\ConfigurationManager;
+use qmmonitor\core\RabbitMqManager;
 
 class PhpHelper
 {
@@ -62,25 +63,40 @@ class PhpHelper
     /**
      * PhpHelper::kill("php-work");
      * @param string $str
+     * @param int $signo
      */
-    public static function killAll(string $str)
+    public static function killAll(string $str = '',$signo = 15)
     {
-        $command = "kill -s 15  `ps -aux | grep {$str} | awk '{print $2}'`";
+        if (empty($str)) $str = \qmmonitor\command\Command::APPLICATION_NAME;
+        $command = "kill -s {$signo}  `ps -aux | grep {$str} | awk '{print $2}'`";
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
         }
+
     }
 
     /**
      *
      * @param $pid
      */
-    public static function kill($pid)
+    public static function kill($pid,$signo = 15)
     {
-        $command = "kill -15 {$pid}";
+        $command = "kill -{$signo} {$pid}";
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
         }
+    }
+
+    /**
+     * 获取id
+     * @param string $item
+     * @return int
+     */
+    public static function getPidFromOutput(string $item)
+    {
+        $item = trim($item);
+        $items = explode(" ",$item);
+        return (int)$items[0] ?? 0;
     }
 
     /**

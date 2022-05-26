@@ -33,18 +33,33 @@ class ProcessManager extends AbstractProcess
         /**@var $pm \Swoole\Process\Manager **/
         $pm = $this->process;
         $pm->addBatch($nowQueueConfig['count'],function (Pool $pool,$workerId) use ($queueName,$amqpConfig,$nowQueueConfig){
+            //设置信号
+            $this->signal();
             $pid = posix_getpid();
-            $applicationName = Command::APPLICATION_NAME;
-            $processName = "php-work-{$applicationName}-{$queueName}-{$workerId}";
+            $processName = $this->getProcessName($queueName,$workerId,'free');
+            //默认使用free标记空闲进程
             $this->setProcessName($processName);
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . PHP_EOL);
             //设置channel
             $channel = RabbitMqManager::getInstance($amqpConfig)->qos();
             //创建回调
-            $callBack = RabbitMqManager::getInstance()
-                ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);
+            //$callBack = RabbitMqManager::getInstance()
+                //->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);
             //消费
-            RabbitMqManager::getInstance()->consumer($queueName, $callBack,$channel);
+            //RabbitMqManager::getInstance()->consumer($queueName, $channel,$nowQueueConfig,$workerId,$pid);
+            $consumerTag = $channel->basic_consume(
+                $queueName,
+                RabbitMqManager::getInstance()->getConsumerTag(),
+                RabbitMqManager::getInstance()->getNoLocal(),
+                RabbitMqManager::getInstance()->getNoAck(),
+                RabbitMqManager::getInstance()->getExclusive(),
+                RabbitMqManager::getInstance()->getNoWait(),
+                RabbitMqManager::getInstance()->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid),
+            );
+            #监听消息
+            while(count($channel->callbacks)) {
+                $channel->wait();
+            }
         },$enableCoroutine);
         $this->process = $pm;
         return $this->process;

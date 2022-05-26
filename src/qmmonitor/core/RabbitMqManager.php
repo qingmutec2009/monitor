@@ -8,7 +8,9 @@ use qmmonitor\exception\MonitorException;
 use qmmonitor\extra\pojo\JobArguments;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
+use qmmonitor\process\ProcessManager;
 use Swoole\Coroutine;
+use Swoole\Process;
 
 /**
  *
@@ -70,6 +72,7 @@ class RabbitMqManager
      * @var \PhpAmqpLib\Channel\AMQPChannel
      */
     private $channel = null;
+
 
 
     public function __construct(array $config = [])
@@ -201,9 +204,16 @@ class RabbitMqManager
     public function consumerCallBack(AMQPChannel $channel,array $nowQueueConfig,string $queueName,int $workerId,$pid = 0) : \Closure
     {
         return  function (AMQPMessage $msg) use ($channel,$nowQueueConfig,$queueName,$workerId,$pid){
-            //echo " [workerId={$workerId},pid={$pid}] Received ", $msg->body, "\n";
-            //sleep(3);
-            //echo "{$workerId}模拟处理完成，即将进入真实的Job执行文件中".PHP_EOL;
+            if (!ProcessManager::$isRunning) {
+                echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
+                //只要此属性发生变化为false,将停止一切消息行为,此处拦截将不会进入到业务代码中去。ACK机制也能够确保消息不丢失。
+                $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped');
+                ProcessManager::getInstance()->setProcessName($processName);
+                return '';
+            }
+            //说明是活动进程
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'activity');
+            ProcessManager::getInstance()->setProcessName($processName);
             //处理当前整合信息
             $jobArguments = new JobArguments();
             $jobArguments->setMessage($msg->body);
@@ -232,6 +242,10 @@ class RabbitMqManager
             if ($authAck && !$this->getNoAck()) {
                 $msg->ack();
             }
+            //只要是走完一个流程，将重置进程名为已停止
+            //echo "队列名称{$queueName}：队列流程已完成，即将设置进程为stopped".PHP_EOL;
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped');
+            ProcessManager::getInstance()->setProcessName($processName);
         };
     }
 
