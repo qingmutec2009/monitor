@@ -75,6 +75,14 @@ private $command = null;
     {
         $this->command->stop($this->config);
     }
+    
+    /**
+     * 结束队列
+     */
+    public function reload()
+    {
+        $this->command->reload($this->config);
+    }
 
     /**
      * 获取队列运行状态
