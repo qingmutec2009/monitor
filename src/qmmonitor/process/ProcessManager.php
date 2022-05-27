@@ -43,23 +43,11 @@ class ProcessManager extends AbstractProcess
             //设置channel
             $channel = RabbitMqManager::getInstance($amqpConfig)->qos();
             //创建回调
-            //$callBack = RabbitMqManager::getInstance()
-                //->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);
+            $callBack = RabbitMqManager::getInstance()
+                ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);
             //消费
-            //RabbitMqManager::getInstance()->consumer($queueName, $channel,$nowQueueConfig,$workerId,$pid);
-            $consumerTag = $channel->basic_consume(
-                $queueName,
-                RabbitMqManager::getInstance()->getConsumerTag(),
-                RabbitMqManager::getInstance()->getNoLocal(),
-                RabbitMqManager::getInstance()->getNoAck(),
-                RabbitMqManager::getInstance()->getExclusive(),
-                RabbitMqManager::getInstance()->getNoWait(),
-                RabbitMqManager::getInstance()->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid),
-            );
-            #监听消息
-            while(count($channel->callbacks)) {
-                $channel->wait();
-            }
+            RabbitMqManager::getInstance()->consumer($queueName, $callBack, $channel);
+
         },$enableCoroutine);
         $this->process = $pm;
         return $this->process;

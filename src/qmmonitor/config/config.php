@@ -6,7 +6,7 @@ return [
     //通用设置
     //'temp_dir'  => '',//默认是temp目录
     //'pid_file'  => '',//默认是pid文件在temp目录中
-    'retry'     => 4,//默认=1
+    'retry'     => 4,//重试次数，默认=1
     'queue_run_right_now'   => false,
     'exception_closure' => function(\Throwable $throwable, AMQPMessage $message) {
         //有一个或多个任务时执行时捕获异常或者错误，一旦在异常或错误引起重试次数超标后则会回调此方法
