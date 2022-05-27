@@ -205,7 +205,7 @@ class RabbitMqManager
     {
         return  function (AMQPMessage $msg) use ($channel,$nowQueueConfig,$queueName,$workerId,$pid){
             if (!ProcessManager::$isRunning) {
-                echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
+                //echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
                 //只要此属性发生变化为false,将停止一切消息行为,此处拦截将不会进入到业务代码中去。ACK机制也能够确保消息不丢失。
                 $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped');
                 ProcessManager::getInstance()->setProcessName($processName);

@@ -37,7 +37,7 @@ class TestJob extends AbstractJob
                 ->setExchange('fanout_qm_image_exchange');
             $command->put($this->params,$rabbitMqQueueArguments);
         }*/
-        sleep(1);
+        sleep(10);
         //手动确认
         $this->ack();
         //var_dump($this->params);

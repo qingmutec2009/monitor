@@ -24,15 +24,15 @@ abstract class AbstractProcess
     {
         pcntl_signal(SIGHUP,  function($signo) {
             self::$isRunning = false;
-            echo "{$signo}SIGHUP信号处理器被调用 ".PHP_EOL;
+            //echo "{$signo}SIGHUP信号处理器被调用 ".PHP_EOL;
         });
         pcntl_signal(SIGTERM,  function($signo) {
             self::$isRunning = false;
-            echo "{$signo}停止信号".PHP_EOL;
+            //echo "{$signo}停止信号".PHP_EOL;
         });
         pcntl_signal(SIGTSTP,  function($signo) {
             self::$isRunning = false;
-            echo "{$signo}来自终端的停止信号 ".PHP_EOL;
+            //echo "{$signo}来自终端的停止信号 ".PHP_EOL;
         });
         /*pcntl_signal(SIGINT,  function($signo) {
             self::$isRunning = false;

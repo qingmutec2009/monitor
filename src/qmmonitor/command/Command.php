@@ -192,7 +192,6 @@ class Command
             }
             $list = PhpHelper::getWorkList();
             if (empty($list)) break;
-            sleep(1);
         }
         exit(Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL);
     }
