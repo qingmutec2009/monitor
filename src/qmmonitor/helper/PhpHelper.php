@@ -67,7 +67,7 @@ class PhpHelper
      */
     public static function killAll(string $str = '',$signo = 15)
     {
-        if (empty($str)) $str = \qmmonitor\command\Command::$projectName;
+        if (empty($str)) $str = self::getProcessNameSearchName(\qmmonitor\command\Command::$projectName);
         $command = "kill -s {$signo}  `ps -aux | grep {$str} | awk '{print $2}'`";
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
@@ -131,19 +131,30 @@ class PhpHelper
     public static function getWorkList(string $findStr = '') : array
     {
         //如果未传递则会默认取当前应用名称
-        if (empty($findStr)) $findStr = \qmmonitor\command\Command::$projectName;
+        if (empty($findStr)) $findStr = self::getProcessNameSearchName(\qmmonitor\command\Command::$projectName);
         $result = [];
         if (self::isLinux() && self::isCli()) {
             exec("ps -A -opid -oargs | grep {$findStr}",$output);
             if (!empty($output) && is_array($output)) {
                 foreach ($output as $item) {
-                    if (strpos($item,'php-work-'.$findStr) !== false) {
+                    if (strpos($item,'php-work-') !== false) {
                         array_push($result,$item);
                     }
                 }
             }
         }
         return $result;
+    }
+
+    /**
+     * 获取进程名称前缀
+     * @param string $projectName
+     * @return string
+     */
+    public static function getProcessNameSearchName(string $projectName) : string
+    {
+        $applicationName = \qmmonitor\command\Command::APPLICATION_NAME;
+        return  "{$applicationName}-{$projectName}";
     }
 
 }

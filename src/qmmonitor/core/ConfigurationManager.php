@@ -233,8 +233,8 @@ class ConfigurationManager
     public function getQueueByExchangeName(string $exchangeName,string $routeKey) : string
     {
         if (empty($exchangeName)) exit(Color::error('exchange不能为空'));
-        $exchangesonfig = $this->getConfig('exchanges');
-        $config = $exchangesonfig[$exchangeName] ?? [];
+        $exchangesConfig = $this->getConfig('exchanges');
+        $config = $exchangesConfig[$exchangeName] ?? [];
         if (empty($config)) exit(Color::error("当前exchange={$exchangeName}未配置"));
         $queues = $config['queues'] ?? [];
         if (empty($queues)) exit(Color::error("当前交换机{$exchangeName}必须配置队列信息"));
@@ -244,6 +244,21 @@ class ConfigurationManager
             }
         }
         exit(Color::error("当前exchange={$exchangeName}和route_key={$routeKey}未能匹配到对应的除名名称，请检查配置"));
+    }
+
+    /**
+     * 根据交换机名称和队列名称获取路由key
+     * @param string $exchangeName
+     * @param string $queueName
+     * @return mixed|string
+     */
+    public function getRouteKeyByExchangeNameAndQueueName(string $exchangeName,string $queueName)
+    {
+        $exchangesConfig = $this->getConfig('exchanges');
+        $exchangeConfig = $exchangesConfig[$exchangeName] ?? [];
+        $queues = $exchangeConfig['queues'] ?? [];
+        $queueConfig = $queues[$queueName] ?? [];
+        return $queueConfig['route_key'] ?? '';
     }
 
     /**
@@ -278,5 +293,7 @@ class ConfigurationManager
         $this->config['temp_dir'] = $tempDir;
         $pidFile = $this->config['pid_file'] ?? 'pid.pid';
         $this->config['pid_file'] = $tempDir.DIRECTORY_SEPARATOR.$pidFile;
+        $reloadMaxTime = $this->config['reload_max_wait_time'] ?? 15;
+        $this->config['reload_max_wait_time'] = $reloadMaxTime;
     }
 }
