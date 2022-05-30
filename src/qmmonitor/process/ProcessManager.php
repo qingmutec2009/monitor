@@ -36,7 +36,7 @@ class ProcessManager extends AbstractProcess
             //设置信号
             $this->signal();
             $pid = posix_getpid();
-            $processName = $this->getProcessName($queueName,$workerId,'free');
+            $processName = $this->getProcessName($queueName,$workerId,'free',Command::$projectName);
             //默认使用free标记空闲进程
             $this->setProcessName($processName);
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . PHP_EOL);

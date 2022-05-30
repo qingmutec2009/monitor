@@ -67,7 +67,7 @@ class PhpHelper
      */
     public static function killAll(string $str = '',$signo = 15)
     {
-        if (empty($str)) $str = \qmmonitor\command\Command::APPLICATION_NAME;
+        if (empty($str)) $str = \qmmonitor\command\Command::$projectName;
         $command = "kill -s {$signo}  `ps -aux | grep {$str} | awk '{print $2}'`";
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
@@ -131,7 +131,7 @@ class PhpHelper
     public static function getWorkList(string $findStr = '') : array
     {
         //如果未传递则会默认取当前应用名称
-        if (empty($findStr)) $findStr = \qmmonitor\command\Command::APPLICATION_NAME;
+        if (empty($findStr)) $findStr = \qmmonitor\command\Command::$projectName;
         $result = [];
         if (self::isLinux() && self::isCli()) {
             exec("ps -A -opid -oargs | grep {$findStr}",$output);

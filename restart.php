@@ -7,6 +7,6 @@ restart();
 
 function restart()
 {
-    $command = new \qmmonitor\command\Command();
+    $command = new \qmmonitor\command\Command(\qmmonitor\command\Command::APPLICATION_NAME);
     $command->restart();
 }

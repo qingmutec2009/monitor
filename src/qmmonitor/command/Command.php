@@ -5,6 +5,7 @@ use qmmonitor\core\ConfigurationManager;
 use qmmonitor\core\Core;
 use qmmonitor\extra\Color;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
+use qmmonitor\extra\traits\Singleton;
 use qmmonitor\helper\FileHelper;
 use qmmonitor\helper\PhpHelper;
 
@@ -15,12 +16,20 @@ use qmmonitor\helper\PhpHelper;
  */
 class Command
 {
+
     const APPLICATION_NAME = 'monitor';
 
-    public function __construct()
+    /**
+     * 必须传入当前使用项目的名称，会被用作标识
+     * @var string
+     */
+    public static $projectName = '';
+
+    public function __construct(string $projectName)
     {
         defined('SWOOLE_VERSION') or define('SWOOLE_VERSION', intval(phpversion('swoole')));
         defined('MONITOR_ROOT') or define('MONITOR_ROOT', realpath(getcwd()));
+        self::$projectName = $projectName;
     }
 
     /**
@@ -180,8 +189,9 @@ class Command
         //初次发送信号进程进行准备
         PhpHelper::killAll();
         sleep(3);
+        $maxWait = (int)ConfigurationManager::getInstance()->getConfig('reload_max_wait_time');
         //正式准备删除
-        for ($i = 0; $i < 15; $i ++) {
+        for ($i = 0; $i < $maxWait; $i ++) {
             $list = PhpHelper::getWorkList();
             foreach ($list as $item) {
                 if (strpos($item,'activity') === false) {
@@ -192,6 +202,11 @@ class Command
             }
             $list = PhpHelper::getWorkList();
             if (empty($list)) break;
+            sleep(1);
+        }
+        //超过15S依然无法完全kill完全的话则人工介入
+        if (!empty(PhpHelper::getWorkList())) {
+            exit(Color::notice("application ".self::APPLICATION_NAME." reload failed.....").PHP_EOL);
         }
         exit(Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL);
     }
@@ -218,5 +233,21 @@ class Command
     public function list(string $findStr = '') : array
     {
         return PhpHelper::getWorkList($findStr);
+    }
+
+    /**
+     * @return string
+     */
+    public function getProjectName(): string
+    {
+        return $this->projectName;
+    }
+
+    /**
+     * @param string $projectName
+     */
+    public function setProjectName(string $projectName): void
+    {
+        $this->projectName = $projectName;
     }
 }

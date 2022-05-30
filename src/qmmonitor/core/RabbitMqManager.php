@@ -4,6 +4,7 @@ namespace qmmonitor\core;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use qmmonitor\command\Command;
 use qmmonitor\exception\MonitorException;
 use qmmonitor\extra\pojo\JobArguments;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
@@ -207,12 +208,12 @@ class RabbitMqManager
             if (!ProcessManager::$isRunning) {
                 //echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
                 //只要此属性发生变化为false,将停止一切消息行为,此处拦截将不会进入到业务代码中去。ACK机制也能够确保消息不丢失。
-                $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped');
+                $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped',Command::$projectName);
                 ProcessManager::getInstance()->setProcessName($processName);
                 return '';
             }
             //说明是活动进程
-            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'activity');
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'activity',Command::$projectName);
             ProcessManager::getInstance()->setProcessName($processName);
             //处理当前整合信息
             $jobArguments = new JobArguments();
@@ -244,7 +245,7 @@ class RabbitMqManager
             }
             //只要是走完一个流程，将重置进程名为已停止
             //echo "队列名称{$queueName}：队列流程已完成，即将设置进程为stopped".PHP_EOL;
-            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped');
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped',Command::$projectName);
             ProcessManager::getInstance()->setProcessName($processName);
         };
     }

@@ -9,7 +9,7 @@ $data = [
     ['id' => 3,'name' => 'c',],
 ];
 //test();die('over');
-$command = new \qmmonitor\command\Command();
+$command = new \qmmonitor\command\Command(\qmmonitor\command\Command::APPLICATION_NAME);
 //处理message
 $message = json_encode($data,JSON_UNESCAPED_UNICODE + JSON_UNESCAPED_SLASHES);
 //$message = file_get_contents('1.txt');

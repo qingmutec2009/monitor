@@ -13,8 +13,8 @@ MQ监听项目
 composer地址：https://packagist.org/packages/qingmutec/monitor?query=qingmutec <br/>
 composer命令： swoole process manager for rabbitMQ <br/>
 其它说明：
-1. php版本大于等于7.2。
-2. swoole版本大于v4.5.3以上
+1. php版本>=7.2。
+2. swoole版本>v4.5.3 (swoole版本至少也要v4.5.4，本项目用于生产环境的swoole版本=4.8.9)
 
 #### 使用说明
 
@@ -29,6 +29,7 @@ composer命令： swoole process manager for rabbitMQ <br/>
 8.  当前项目已经默认将"php-amqplib"添加为依赖所以可以不用单独为其设置依赖
 9.  v1.3中根目录会有相应的.sh文件可以直接使用。
 10. 在框架中可使用框架自带的Command命令去调用\qmmonitor\command中相应的方法完成对接。
+11. 如new \qmmonitor\comman(env('app.app_name'));需要传入当前项目名称会被当作当前进程标识。
 
 #### 接入示例
 
@@ -46,7 +47,7 @@ private $command = null;
 
     public function __construct()
     {
-        $this->command = new Command();
+        $this->command = new Command(env('app.app_name'));//传入当前项目名称，,会被当作进程标识
         $this->config = config('queue');
     }
 

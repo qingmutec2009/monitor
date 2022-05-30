@@ -28,7 +28,6 @@ class TestJob extends AbstractJob
         $queueName = $this->jobArguments->getQueueName();
         echo "当前队列名称{$queueName}输出:".$this->params.PHP_EOL;
         //file_put_contents('consumer.txt',$queueName.'+'.date('Y-m-d H:i:s'));
-
         //测试转入其它队列
         $command = new Command();
         /*if ($queueName == 'direct_qm_goods_input_queue') {
