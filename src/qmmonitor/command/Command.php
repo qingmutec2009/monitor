@@ -208,7 +208,11 @@ class Command
         if (!empty(PhpHelper::getWorkList())) {
             exit(Color::notice("application ".self::APPLICATION_NAME." reload failed.....").PHP_EOL);
         }
-        exit(Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL);
+        echo (Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL);
+        echo Color::notice("starting").PHP_EOL;
+        //重启
+        $this->start($config);
+
     }
 
     /**
