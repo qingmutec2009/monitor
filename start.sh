@@ -1,2 +1,2 @@
 #!/bin/bash
-nohup php index.php >start.log&
+nohup /usr/local/php7.3/bin/php index.php >start.log&

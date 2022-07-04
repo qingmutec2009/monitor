@@ -6,7 +6,7 @@ put();
 //    /bin/sh ./put.sh
 function put()
 {
-    $command = new \qmmonitor\command\Command();
+    $command = new \qmmonitor\command\Command('monitor');
     $rabbitMqQueueArguments = new RabbitMqQueueArguments();
     $rabbitMqQueueArguments->setQueueName('direct_qm_goods_input_queue')
         ->setExchange('direct_qm_goods_exchange')
