@@ -149,19 +149,16 @@ class Command
     {
         ConfigurationManager::getInstance()->loadConfig($config);
         $this->directoryInit();
-        $file = ConfigurationManager::getInstance()->getConfig('pid_file');
         //处理主进程
-        if (!is_file($file)) {
-            echo (Color::error("pid文件不存在，可能被删除").PHP_EOL);
-        } else {
-            $pid = file_get_contents($file);
-            PhpHelper::kill($pid,9);
-            unlink($file);
-        }
-        $list = PhpHelper::getWorkList();
-        if (!empty($list)) {
-            PhpHelper::killAll('',9);
-        }
+        PhpHelper::killMaster();
+        //依次输出关停信息
+        PhpHelper::closeInfoOutput();
+        //初次发送信号进程进行准备
+        PhpHelper::killAll();
+        sleep(3);
+        //检测关停进程
+        PhpHelper::killByActivity();
+        echo (Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL);
     }
     /**
      * 安全的停止进程
@@ -170,50 +167,11 @@ class Command
      */
     public function reload(array $config = [])
     {
-        ConfigurationManager::getInstance()->loadConfig($config);
-        $this->directoryInit();
-        $file = ConfigurationManager::getInstance()->getConfig('pid_file');
-        //处理主进程
-        if (!is_file($file)) {
-            echo (Color::error("pid文件不存在，可能被删除").PHP_EOL);
-        } else {
-            $pid = file_get_contents($file);
-            PhpHelper::kill($pid,9);
-            unlink($file);
-        }
-        //处理子进程
-        $list = PhpHelper::getWorkList();
-        foreach ($list as $item) {
-            echo Color::notice("当前正在关闭的进程信息:{$item}".PHP_EOL);
-        }
-        //初次发送信号进程进行准备
-        PhpHelper::killAll();
-        sleep(3);
-        $maxWait = (int)ConfigurationManager::getInstance()->getConfig('reload_max_wait_time');
-        //正式准备删除
-        for ($i = 0; $i < $maxWait; $i ++) {
-            $list = PhpHelper::getWorkList();
-            foreach ($list as $item) {
-                if (strpos($item,'activity') === false) {
-                    //只要不是活动进程则一律停止
-                    $workId = PhpHelper::getPidFromOutput($item);
-                    PhpHelper::kill($workId,9);
-                }
-            }
-            //重新再拉一次
-            $list = PhpHelper::getWorkList();
-            if (empty($list)) break;
-            sleep(1);
-        }
-        //超过15S依然无法完全kill完全的话则人工介入
-        if (!empty(PhpHelper::getWorkList())) {
-            exit(Color::notice("application ".self::APPLICATION_NAME." reload failed.....").PHP_EOL);
-        }
-        echo (Color::notice("application ".self::APPLICATION_NAME." already stopped.....").PHP_EOL);
+        //安全关停再重启
+        $this->stop($config);
         echo Color::notice("starting").PHP_EOL;
         //重启
         $this->start($config);
-
     }
 
     /**
