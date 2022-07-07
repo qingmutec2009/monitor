@@ -9,7 +9,7 @@ return [
     'retry'     => 4,//重试次数，默认=1
     'reload_max_wait_time'   => 15,//执行reload时的超时时间
     'queue_run_right_now'   => false,
-    'exception_closure' => function(\Throwable $throwable, AMQPMessage $message) {
+    'exception_closure' => function(\Throwable $throwable, AMQPMessage $message, array $config) {
         //有一个或多个任务时执行时捕获异常或者错误，一旦在异常或错误引起重试次数超标后则会回调此方法
         echo '我是被错误或异常触发的回调' . PHP_EOL;
         //var_dump($throwable->getMessage());

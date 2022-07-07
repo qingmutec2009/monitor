@@ -236,11 +236,11 @@ class RabbitMqManager
                 //如果重试结果依然是失败的，则会调起
                 $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
                 $throwable = Core::getInstance()->getThrowable();
-                $exceptionClosure($throwable,$msg);
+                $exceptionClosure($throwable,$msg,$nowQueueConfig);
             }
             //消息确认
-            $authAck = $nowQueueConfig['auto_ack'] ?? true;
-            if ($authAck && !$this->getNoAck()) {
+            $autoAck = $nowQueueConfig['auto_ack'] ?? true;
+            if ($autoAck && !$this->getNoAck()) {
                 $msg->ack();
             }
             //只要是走完一个流程，将重置进程名为已停止
