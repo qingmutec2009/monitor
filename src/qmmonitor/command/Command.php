@@ -200,6 +200,7 @@ class Command
                     PhpHelper::kill($workId,9);
                 }
             }
+            //重新再拉一次
             $list = PhpHelper::getWorkList();
             if (empty($list)) break;
             sleep(1);

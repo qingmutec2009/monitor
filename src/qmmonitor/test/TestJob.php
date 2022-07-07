@@ -29,14 +29,14 @@ class TestJob extends AbstractJob
         echo "当前队列名称{$queueName}输出:".$this->params.PHP_EOL;
         //file_put_contents('consumer.txt',$queueName.'+'.date('Y-m-d H:i:s'));
         //测试转入其它队列
-        $command = new Command();
+        //$command = new Command();
         /*if ($queueName == 'direct_qm_goods_input_queue') {
             $rabbitMqQueueArguments = new RabbitMqQueueArguments();
             $rabbitMqQueueArguments->setQueueName('fanout_qm_image_upload_queue')
                 ->setExchange('fanout_qm_image_exchange');
             $command->put($this->params,$rabbitMqQueueArguments);
         }*/
-        sleep(10);
+        sleep(1);
         //手动确认
         $this->ack();
         //var_dump($this->params);

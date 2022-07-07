@@ -290,8 +290,9 @@ class RabbitMqManager
         }
         //投入到rabbitMq
         $messageBody = $this->transformAMQPMessage($message);
-        //$this->getChannel()->confirm_select()
-
+        if ($rabbitMqQueueArguments->getProducerConfirm()) {
+            $this->getChannel()->confirm_select($rabbitMqQueueArguments->getNoWait());
+        }
         $this->getChannel()->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
         return $runRightNow;
     }

@@ -10,6 +10,7 @@ function put()
     $rabbitMqQueueArguments = new RabbitMqQueueArguments();
     $rabbitMqQueueArguments->setQueueName('direct_qm_goods_input_queue')
         ->setExchange('direct_qm_goods_exchange')
+        ->setProducerConfirm(true)
         ->setRouteKey('goods_input');
     $i = 0;
     while (true) {
