@@ -106,6 +106,7 @@ public function put()
             $queueComponent = new QueueComponent();
             $queueComponent->setExchange('direct_goods_exchange')
                 ->setQueue('direct_goods_test_queue')
+                ->setProducerConfirm(true)
                 ->setRouteKey('goods_test');
             //或者使用RabbitMqQueueArguments对象设置属性后传入第二个参数中
             $queueComponent->put('我是一个测试消息', null, $this->config);
