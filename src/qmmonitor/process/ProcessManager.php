@@ -41,7 +41,8 @@ class ProcessManager extends AbstractProcess
             $this->setProcessName($processName);
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . PHP_EOL);
             //设置channel
-            $channel = RabbitMqManager::getInstance($amqpConfig)->qos();
+            $rabbitMqManager = RabbitMqManager::getInstance($amqpConfig);
+            $channel = $rabbitMqManager->getChannel();
             //创建回调
             $callBack = RabbitMqManager::getInstance()
                 ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);

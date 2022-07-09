@@ -140,7 +140,7 @@ class RabbitMqManager
     {
         if (empty($this->channel)) {
             $this->getConnection();
-            $this->channel = $this->connection->channel();
+            $this->channel = $this->qos($this->connection->channel());
         }
         return $this->channel;
     }
