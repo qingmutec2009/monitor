@@ -102,8 +102,8 @@ return [
         'virtual'       => '/',
         //生产API参数配置
         'keep_alive'    => true,//连接保持
-        'connection_timeout'    => 60,//连接超时时间
-        'heart_beat'    => 15,//心跳检测
+        'connection_timeout'    => 120,//连接超时时间
+        'heart_beat'    => 60,//心跳检测
         //消费API参数配置
         'consumer_tag'  => '',//消费者标识符
         'no_local'      => false,//不接受此使用者发布的消息
