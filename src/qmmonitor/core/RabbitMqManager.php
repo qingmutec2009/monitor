@@ -251,6 +251,19 @@ class RabbitMqManager
     }
 
     /**
+     * 重连
+     */
+    public function reConnect()
+    {
+        if (!$this->connection->isConnected()) {
+            $this->connection = null;
+            $this->channel = null;
+            $this->getChannel();
+        }
+        return $this->channel;
+    }
+
+    /**
      * 写入队列 todo 本方法可以通过interface或abstract来约束名称
      * @param mixed $message
      * @param RabbitMqQueueArguments $rabbitMqQueueArguments
@@ -288,8 +301,11 @@ class RabbitMqManager
             Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
             return $runRightNow;
         }
+        //获取messageId
+        $messageId = $this->getMessageId($rabbitMqQueueArguments,$message);
+        $options = $this->getPutOptions($messageId);
         //投入到rabbitMq
-        $messageBody = $this->transformAMQPMessage($message);
+        $messageBody = $this->transformAMQPMessage($message,$options);
         if ($rabbitMqQueueArguments->getProducerConfirm()) {
             $this->getChannel()->confirm_select($rabbitMqQueueArguments->getNoWait());
         }
@@ -384,12 +400,44 @@ class RabbitMqManager
     /**
      * 转化为标准化的AMQPMessage
      * @param mixed $messageBody
+     * @param array $options
      * @return AMQPMessage
      */
-    public function transformAMQPMessage($messageBody,$options = array('content_type' => 'text/plain', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT))
+    public function transformAMQPMessage($messageBody,array $options)
     {
         $message = new AMQPMessage($messageBody, $options);
         return $message;
+    }
+
+    /**
+     * 获取put操作时的Options
+     * @param string $messageId
+     * @param string $contentType
+     * @param int $mode
+     * @return array
+     */
+    public function getPutOptions(string $messageId,string $contentType = 'text/plain',int $mode = AMQPMessage::DELIVERY_MODE_PERSISTENT) : array
+    {
+        $options = array(
+            'content_type' => $contentType,
+            'delivery_mode' => $mode,
+            'message_id'    => $messageId
+        );
+        return $options;
+    }
+
+    /**
+     * 获取messageId,如果用户未自定义设置，将自动根据消息内容生成
+     * @param RabbitMqQueueArguments $rabbitMqQueueArguments
+     * @param $message
+     * @return string
+     */
+    public function getMessageId(RabbitMqQueueArguments $rabbitMqQueueArguments,$message) : string
+    {
+        //初始化messageId
+        $messageId = (string)$rabbitMqQueueArguments->getMessageId();
+        if (empty($messageId)) $messageId = md5(strval($message));
+        return $messageId;
     }
     /**
      * @return mixed|string

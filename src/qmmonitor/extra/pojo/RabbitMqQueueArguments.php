@@ -37,6 +37,12 @@ class RabbitMqQueueArguments
      */
     private $noWait = false;
 
+    /**
+     * 消息id
+     * @var string
+     */
+    private $messageId = '';
+
     public function __construct()
     {
 
@@ -129,6 +135,24 @@ class RabbitMqQueueArguments
     public function setNoWait(bool $noWait): self
     {
         $this->noWait = $noWait;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMessageId(): string
+    {
+        return $this->messageId;
+    }
+
+    /**
+     * @param string $messageId
+     * @return $this
+     */
+    public function setMessageId(string $messageId): self
+    {
+        $this->messageId = $messageId;
         return $this;
     }
 }

@@ -60,7 +60,7 @@ abstract class AbstractProcess
     {
         $applicationName = Command::APPLICATION_NAME;
         $processName = "php-work-{$applicationName}-{$projectName}";
-        $processName .= "-{$queueName}-{$workerId}-{$consumerStatus}}";
+        $processName .= "-{$queueName}-{$workerId}-{$consumerStatus}";
         return $processName;
     }
 
