@@ -299,7 +299,7 @@ class RabbitMqManager
             }
             //执行任务
             Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
-            return $runRightNow;
+            return true;
         }
         //获取messageId
         $messageId = $this->getMessageId($rabbitMqQueueArguments,$message);
@@ -310,7 +310,7 @@ class RabbitMqManager
             $this->getChannel()->confirm_select($rabbitMqQueueArguments->getNoWait());
         }
         $this->getChannel()->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
-        return $runRightNow;
+        return true;
     }
 
     /**
