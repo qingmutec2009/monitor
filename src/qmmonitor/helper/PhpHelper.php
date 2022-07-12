@@ -74,7 +74,6 @@ class PhpHelper
         if (self::isLinux() && self::isCli()) {
             exec($command,$output,$resultCode);
         }
-
     }
 
     /**
@@ -83,12 +82,14 @@ class PhpHelper
     public static function killByActivity()
     {
         $maxWait = (int)ConfigurationManager::getInstance()->getConfig('reload_max_wait_time');
+        $waitingStr = '等待中,还有进程在执行中.';
         //正式准备删除
         for ($i = 0; $i < $maxWait; $i ++) {
             $list = PhpHelper::getWorkList();
             foreach ($list as $item) {
                 if (strpos($item,'activity') === false) {
                     //只要不是活动进程则一律停止
+                    echo Color::notice("当前正在关闭的进程信息:{$item}".PHP_EOL);
                     $workId = PhpHelper::getPidFromOutput($item);
                     PhpHelper::kill($workId,9);
                 }
@@ -97,6 +98,7 @@ class PhpHelper
             $list = PhpHelper::getWorkList();
             if (empty($list)) break;
             sleep(1);
+            echo Color::notice($waitingStr.str_repeat('.',$i + 1).PHP_EOL);
         }
         //超过15S依然无法完全kill完全的话则人工介入
         if (!empty(PhpHelper::getWorkList())) {
@@ -193,7 +195,7 @@ class PhpHelper
     {
         $file = ConfigurationManager::getInstance()->getConfig('pid_file');
         if (!is_file($file)) {
-            exit(Color::error("pid文件不存在，可能被删除").PHP_EOL);
+            exit(Color::warning("pid文件不存在，可能被删除").PHP_EOL);
         } else {
             $pid = file_get_contents($file);
             PhpHelper::kill($pid,9);

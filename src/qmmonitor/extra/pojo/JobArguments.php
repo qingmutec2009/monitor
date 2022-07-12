@@ -50,6 +50,18 @@ class JobArguments
      */
     private $configurationManager = null;
 
+    /**
+     * 当前运行的任务名称
+     * @var string
+     */
+    private $jobName = '';
+
+    /**
+     * 附带的自定义参数
+     * @var array
+     */
+    private $extendParams = [];
+
     public function __construct()
     {
 
@@ -178,6 +190,42 @@ class JobArguments
     public function setConfigurationManager(?ConfigurationManager $configuration): self
     {
         $this->configuration = $configuration;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getJobName(): string
+    {
+        return $this->jobName;
+    }
+
+    /**
+     * @param string $jobName
+     * @return $this
+     */
+    public function setJobName(string $jobName): self
+    {
+        $this->jobName = $jobName;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExtendParams(): array
+    {
+        return $this->extendParams;
+    }
+
+    /**
+     * @param array $extendParams
+     * @return $this
+     */
+    public function setExtendParams(array $extendParams): self
+    {
+        $this->extendParams = $extendParams;
         return $this;
     }
 }

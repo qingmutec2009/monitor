@@ -152,7 +152,7 @@ class Command
         //处理主进程
         PhpHelper::killMaster();
         //依次输出关停信息
-        PhpHelper::closeInfoOutput();
+        //PhpHelper::closeInfoOutput();
         //初次发送信号进程进行准备
         PhpHelper::killAll();
         sleep(3);

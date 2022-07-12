@@ -30,10 +30,15 @@ class Core
     public function runJob(JobArguments $jobArguments,array $nowQueueConfig) : bool
     {
         $jobs = $nowQueueConfig['job'];
+        //设置附带的自定义参数
+        $extendParams = $nowQueueConfig['extend_params'] ?? [];
+        $jobArguments->setExtendParams($extendParams);
         $isSuccess = true;
+        //依次执行相关任务
         foreach ($jobs as $job) {
-            //依次执行相关任务
             try {
+                //设置当前进行的任务
+                $jobArguments->setJobName($job);
                 $jobObject = new $job();
                 $jobObject->perform($jobArguments);
             } catch (\Throwable $throwable) {
