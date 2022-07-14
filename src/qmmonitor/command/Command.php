@@ -143,9 +143,10 @@ class Command
     /**
      * 强制停止
      * @param array $config
+     * @param int $signo
      * @throws \Exception
      */
-    public function stop(array $config = [])
+    public function stop(array $config = [],$signo = 15)
     {
         ConfigurationManager::getInstance()->loadConfig($config);
         $this->directoryInit();
@@ -182,7 +183,7 @@ class Command
     public function restart(array $config = [])
     {
         echo Color::notice("closing").PHP_EOL;
-        $this->stop($config);
+        $this->stop($config,9);
         echo Color::notice("starting").PHP_EOL;
         $this->start($config);
         echo Color::notice("application ".self::APPLICATION_NAME." already started.....").PHP_EOL;
