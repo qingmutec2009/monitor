@@ -195,7 +195,7 @@ class PhpHelper
     {
         $file = ConfigurationManager::getInstance()->getConfig('pid_file');
         if (!is_file($file)) {
-            exit(Color::warning("pid文件不存在，可能被删除").PHP_EOL);
+            echo (Color::warning("pid文件不存在，可能被删除").PHP_EOL);
         } else {
             $pid = file_get_contents($file);
             PhpHelper::kill($pid,9);
