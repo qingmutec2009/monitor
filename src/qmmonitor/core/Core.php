@@ -41,6 +41,7 @@ class Core
                 $jobArguments->setJobName($job);
                 $jobObject = new $job();
                 $jobObject->perform($jobArguments);
+                $jobObject = null;
             } catch (\Throwable $throwable) {
                 $isSuccess = false;
                 $this->setThrowable($throwable);

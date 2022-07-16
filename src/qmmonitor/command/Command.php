@@ -44,6 +44,10 @@ class Command
         $this->checkEnvironment();
         //兼容opcache
         PhpHelper::opCacheClear();
+        //enable_gc 开启gc
+        if (empty(ini_get('zend.enable_gc'))) {
+            ini_set('zend.enable_gc','1');
+        }
         ConfigurationManager::getInstance()->loadConfig($config);
         $ack = ConfigurationManager::getInstance()->getConfig('amqp.no_ack');
         if ($ack) {

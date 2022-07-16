@@ -5,6 +5,7 @@ namespace qmmonitor\core;
 use qmmonitor\extra\Color;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
+use qmmonitor\helper\PhpHelper;
 
 class ConfigurationManager
 {
@@ -295,5 +296,15 @@ class ConfigurationManager
         $this->config['pid_file'] = $tempDir.DIRECTORY_SEPARATOR.$pidFile;
         $reloadMaxTime = $this->config['reload_max_wait_time'] ?? 15;
         $this->config['reload_max_wait_time'] = $reloadMaxTime;
+        $maxMemoryLimit = $this->config['max_memory_limit'] ?? 100;
+        if (strpos($maxMemoryLimit,'M') === false) {
+            $maxMemoryLimit = $maxMemoryLimit.'M';
+        }
+        $this->config['max_memory_limit'] = $maxMemoryLimit;
+        $debug = $this->config['debug'] ?? false;
+        if (!is_bool($debug)) {
+            $debug = $debug == 'true' ? true : false;
+        }
+        $this->config['debug'] = $debug;
     }
 }

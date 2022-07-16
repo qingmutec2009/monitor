@@ -5,7 +5,9 @@ namespace qmmonitor\extra\abstracts;
 
 use PhpAmqpLib\Message\AMQPMessage;
 use qmmonitor\core\ConfigurationManager;
+use qmmonitor\extra\Color;
 use qmmonitor\extra\pojo\JobArguments;
+use qmmonitor\helper\PhpHelper;
 
 /**
  * 工作基类
@@ -63,6 +65,11 @@ abstract class AbstractJob
      */
     protected function ack(?AMQPMessage $AMQPMessage = null) : bool
     {
+        //如果开启了debug模式则监听当前进程内存占用
+        if ($this->jobArguments->getConfigurationManager()->getConfig('debug')) {
+            //检查内存
+            $this->checkMemory();
+        }
         //如果是非异步模式则返回false
         $queueRunRightNow = $this->jobArguments->getConfigurationManager()->getConfig('queue_run_right_now');
         if ($queueRunRightNow) return false;
@@ -82,6 +89,23 @@ abstract class AbstractJob
         return false;
     }
 
+    /**
+     * 内存检测
+     */
+    protected function checkMemory()
+    {
+        $bytes = memory_get_usage(true);
+        $maxMemoryLimit = ConfigurationManager::getInstance()->getConfig('max_memory_limit');
+        $maxMemoryLimitByte = (int)PhpHelper::formatToByte($maxMemoryLimit);
+        $nowMemory = PhpHelper::formatBytes($bytes);
+        echo Color::info("当前内存占用:{$nowMemory}".PHP_EOL);
+        if ($bytes > $maxMemoryLimitByte) {
+            //当前内存占用过高
+            echo Color::warning("警告:{$this->jobArguments->getJobName()}占用内存$bytes,超出{$maxMemoryLimit}限制".PHP_EOL);
+        }
+        //gc_collect_cycles();
+    }
+    
     /**
      * 注册参数
      * 注册、兼容旧版本 ，也可以当作初始化函数

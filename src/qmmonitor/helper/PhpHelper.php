@@ -214,4 +214,52 @@ class PhpHelper
         }
     }
 
+    /**
+     * 格式化大小
+     * @param $bytes
+     * @param int $precision
+     * @return string
+     */
+    public static function formatBytes($bytes, $precision = 2) {
+        $units = array("b", "kb", "mb", "gb", "tb");
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+
+        $bytes /= (1 << (10 * $pow));
+
+        return round($bytes, $precision) . " " . $units[$pow];
+    }
+
+    /**
+     * Converts a human readable file size value to a number of bytes that it
+     * represents. Supports the following modifiers: K, M, G and T.
+     * Invalid input is returned unchanged.
+     *
+     * Example:
+     * <code>
+     * $config->formatToByte(10);          // 10
+     * $config->formatToByte('10b');       // 10
+     * $config->formatToByte('10k');       // 10240
+     * $config->formatToByte('10K');       // 10240
+     * $config->formatToByte('10kb');      // 10240
+     * $config->formatToByte('10Kb');      // 10240
+     * // and even
+     * $config->formatToByte('   10 KB '); // 10240
+     * </code>
+     *
+     * @param number|string $value
+     * @return number
+     */
+    public static function formatToByte($value) {
+        return preg_replace_callback('/^\s*(\d+)\s*(?:([kmgt]?)b?)?\s*$/i', function ($m) {
+            switch (strtolower($m[2])) {
+                case 't': $m[1] *= 1024;
+                case 'g': $m[1] *= 1024;
+                case 'm': $m[1] *= 1024;
+                case 'k': $m[1] *= 1024;
+            }
+            return $m[1];
+        }, $value);
+    }
 }

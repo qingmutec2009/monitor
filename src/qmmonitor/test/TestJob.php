@@ -36,7 +36,12 @@ class TestJob extends AbstractJob
                 ->setExchange('fanout_qm_image_exchange');
             $command->put($this->params,$rabbitMqQueueArguments);
         }*/
-        //sleep(1);
+        $rand = [10000,1000000,100000,10,500000,900000];
+        $data = [];$max = $rand[array_rand($rand)];
+        for ($i = 0;$i < $max;$i ++) {
+            $data[] = $i;
+        }
+        sleep(2);
         //手动确认
         $this->ack();
         //var_dump($this->params);
