@@ -105,7 +105,7 @@ abstract class AbstractJob
         }
         //gc_collect_cycles();
     }
-    
+
     /**
      * 注册参数
      * 注册、兼容旧版本 ，也可以当作初始化函数

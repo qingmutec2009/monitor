@@ -9,8 +9,8 @@ return [
     'retry'     => 4,//重试次数，默认=1
     'reload_max_wait_time'  => 15,//执行reload时的超时时间
     'queue_run_right_now'   => false,
-    'max_memory_limit'      => '30M',//单位M
-    'debug'                 => true,//是否开启调试模式
+    'max_memory_limit'      => '30M',//单位M，需要开启debug才会生效
+    'debug'                 => true,//是否开启调试模式,会输出一些内存信息或告警
     'exception_closure' => function(\Throwable $throwable, AMQPMessage $message, array $config) {
         //有一个或多个任务时执行时捕获异常或者错误，一旦在异常或错误引起重试次数超标后则会回调此方法
         echo '我是被错误或异常触发的回调' . PHP_EOL;
