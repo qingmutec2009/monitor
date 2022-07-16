@@ -62,6 +62,12 @@ class JobArguments
      */
     private $extendParams = [];
 
+    /**
+     * 进程名称
+     * @var string
+     */
+    private $processName = '';
+
     public function __construct()
     {
 
@@ -226,6 +232,24 @@ class JobArguments
     public function setExtendParams(array $extendParams): self
     {
         $this->extendParams = $extendParams;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProcessName(): string
+    {
+        return $this->processName;
+    }
+
+    /**
+     * @param string $processName
+     * @return $this
+     */
+    public function setProcessName(string $processName): self
+    {
+        $this->processName = $processName;
         return $this;
     }
 }

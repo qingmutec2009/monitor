@@ -45,7 +45,7 @@ class ProcessManager extends AbstractProcess
             $channel = $rabbitMqManager->getChannel();
             //创建回调
             $callBack = RabbitMqManager::getInstance()
-                ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid);
+                ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid,$processName);
             //消费
             RabbitMqManager::getInstance()->consumer($queueName, $callBack, $channel);
 

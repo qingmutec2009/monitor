@@ -202,9 +202,9 @@ class RabbitMqManager
      * @param int $pid 当前父级工作进程id
      * @return \Closure
      */
-    public function consumerCallBack(AMQPChannel $channel,array $nowQueueConfig,string $queueName,int $workerId,$pid = 0) : \Closure
+    public function consumerCallBack(AMQPChannel $channel,array $nowQueueConfig,string $queueName,int $workerId,$pid = 0,$processName = '') : \Closure
     {
-        return  function (AMQPMessage $msg) use ($channel,$nowQueueConfig,$queueName,$workerId,$pid){
+        return  function (AMQPMessage $msg) use ($channel,$nowQueueConfig,$queueName,$workerId,$pid,$processName){
             if (!ProcessManager::$isRunning) {
                 //echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
                 //只要此属性发生变化为false,将停止一切消息行为,此处拦截将不会进入到业务代码中去。ACK机制也能够确保消息不丢失。
@@ -224,6 +224,7 @@ class RabbitMqManager
             $jobArguments->setChannel($channel);
             $jobArguments->setAMQPmessage($msg);
             $jobArguments->setConfigurationManager(ConfigurationManager::getInstance());
+            $jobArguments->setProcessName($processName);
             $isSuccess = true;
             //重试次数，根据配置而定默认=3
             for ($i = 0;$i < ConfigurationManager::getInstance()->getConfig('retry'); $i ++) {
