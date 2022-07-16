@@ -98,7 +98,7 @@ abstract class AbstractJob
         $maxMemoryLimit = ConfigurationManager::getInstance()->getConfig('max_memory_limit');
         $maxMemoryLimitByte = (int)PhpHelper::formatToByte($maxMemoryLimit);
         $nowMemory = PhpHelper::formatBytes($bytes);
-        echo Color::info($this->jobArguments->getProcessName()."进程占用内存占用:{$nowMemory}".PHP_EOL);
+        echo Color::info($this->jobArguments->getProcessName()."进程内存占用:{$nowMemory}".PHP_EOL);
         if ($bytes > $maxMemoryLimitByte) {
             //当前内存占用过高
             echo Color::warning("警告:{$this->jobArguments->getProcessName()}进程占用内存{$bytes},超出{$maxMemoryLimit}限制".PHP_EOL);

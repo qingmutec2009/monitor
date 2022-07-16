@@ -1,10 +1,12 @@
 <?php
 namespace qmmonitor\core;
 
+use qmmonitor\extra\Color;
 use qmmonitor\extra\pojo\JobArguments;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
 use qmmonitor\helper\FileHelper;
+use qmmonitor\helper\PhpHelper;
 use qmmonitor\process\ProcessManager;
 
 /**
@@ -34,6 +36,7 @@ class Core
         $extendParams = $nowQueueConfig['extend_params'] ?? [];
         $jobArguments->setExtendParams($extendParams);
         $isSuccess = true;
+        $startTime = microtime(true);
         //依次执行相关任务
         foreach ($jobs as $job) {
             try {
@@ -46,6 +49,11 @@ class Core
                 $isSuccess = false;
                 $this->setThrowable($throwable);
             }
+        }
+        $endTime = microtime(true);
+        if (ConfigurationManager::getInstance()->getConfig('debug')) {
+            $consumerTime = PhpHelper::subtraction($startTime,$endTime);
+            echo Color::info($jobArguments->getProcessName()."进程时间消费:{$consumerTime}".PHP_EOL);
         }
         return $isSuccess;
     }

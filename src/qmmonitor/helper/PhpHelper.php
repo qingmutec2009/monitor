@@ -262,4 +262,16 @@ class PhpHelper
             return $m[1];
         }, $value);
     }
+
+    /**
+     * $start|$end的获取方式是:microtime(true);
+     * 获取时间差，毫秒级
+     * @param $start
+     * @param $end
+     * @param string $unitv 时间单位，用于格式化
+     */
+    public static function subtraction($start,$end,$unit = 'ms')
+    {
+        return !empty($unit) ? (($end - $start) * 1000) . $unit : (($end - $start) * 1000);
+    }
 }
