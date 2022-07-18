@@ -14,6 +14,7 @@ function put()
         ->setRouteKey('goods_input');
     $i = 0;
     while (true) {
+        $rabbitMqQueueArguments->setMessageId(uniqid());
         $command->put('测试消息:' . $i.':'.date('Y-m-d H:i:s'),$rabbitMqQueueArguments);
         sleep(3);
         $i ++;

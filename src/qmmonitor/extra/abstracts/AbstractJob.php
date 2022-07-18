@@ -107,6 +107,28 @@ abstract class AbstractJob
     }
 
     /**
+     * 获取消息缓存key
+     * @param string $key = config('caches.cache_mq_message_id')
+     * @return string
+     */
+    protected function getMessageIdCacheKey(string $key) : string
+    {
+        $messageId = $this->getMessageId();
+        return $key . '_' . $messageId;
+    }
+
+    /**
+     * 获取消息id
+     * @return mixed|string
+     */
+    protected function getMessageId() : string
+    {
+        $properties = $this->jobArguments->getAMQPmessage()->get_properties();
+        $messageId = $properties['message_id'] ?? '';
+        return $messageId;
+    }
+
+    /**
      * 注册参数
      * 注册、兼容旧版本 ，也可以当作初始化函数
      * @param $param
