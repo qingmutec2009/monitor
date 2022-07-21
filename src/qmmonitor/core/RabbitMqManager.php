@@ -271,37 +271,6 @@ class RabbitMqManager
      */
     public function put($message,RabbitMqQueueArguments $rabbitMqQueueArguments)
     {
-        $runRightNow = (bool)ConfigurationManager::getInstance()->getConfig('queue_run_right_now');
-        //检测消息长度
-        $this->checkLength($message);
-        if ($runRightNow) {
-            $queueName = $rabbitMqQueueArguments->getQueueName();
-            //以下为兼容处理
-            if (empty($queueName)) {
-                //根据配置拿到相应的job信息
-                $queueName = ConfigurationManager::getInstance()
-                    ->getQueueByExchangeName($rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
-                $rabbitMqQueueArguments->setQueueName($queueName);
-            } else {
-                //检测参数是否正常
-                ConfigurationManager::getInstance()->checkQueueExist($rabbitMqQueueArguments);
-            }
-            //获取队列名称及Job绑定信息
-            $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
-            $nowQueueConfig = $queuesConfig[$queueName] ?? [];
-            if (empty($nowQueueConfig)) throw new MonitorException("当前配置queue中缺少{$queueName}的相应配置");
-            //设置参数
-            $jobArguments = new JobArguments();
-            $jobArguments->setQueueName($queueName)
-                ->setMessage($message)
-                ->setConfigurationManager(ConfigurationManager::getInstance());
-            if (PHP_SAPI == 'cli') {
-                $jobArguments->setPid(posix_getpid());
-            }
-            //执行任务
-            Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
-            return true;
-        }
         //获取messageId
         $messageId = $this->getMessageId($rabbitMqQueueArguments,$message);
         $options = $this->getPutOptions($messageId);
@@ -312,19 +281,6 @@ class RabbitMqManager
         }
         $this->getChannel()->basic_publish($messageBody,$rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
         return true;
-    }
-
-    /**
-     * 检查消息长度
-     * @param $message
-     * @throws MonitorException
-     */
-    public function checkLength($message)
-    {
-        if (is_string($message)) {
-            $size = mb_strlen($message) / 1024;
-            if ($size > 64) throw new MonitorException('消息大小不能超出64KB');
-        }
     }
 
     /**
@@ -360,8 +316,8 @@ class RabbitMqManager
         //如果设置此值=true则会自动创建交换机
         $type = $exchange['type'] ?? 'direct';
         $passive = $exchange['passive'] ?? false;
-        $durable = $exchange['durable'] ?? false;
-        $autoDelete = $exchange['auto_delete'] ?? true;
+        $durable = $exchange['durable'] ?? true;
+        $autoDelete = $exchange['auto_delete'] ?? false;
         $internal = $exchange['internal'] ?? false;
         $nowait = $exchange['nowait'] ?? false;
         $arguments = $exchange['arguments'] ?? [];
@@ -387,7 +343,7 @@ class RabbitMqManager
         $ticket = $queue['ticket'] ?? null;
         if (in_array($queueName,$autoQueueList)) {
             $passive = $queue['passive'] ?? false;//是否检测同名队列
-            $durable = $queue['durable'] ?? false;//是否开启队列持久化
+            $durable = $queue['durable'] ?? true;//是否开启队列持久化
             $exclusive = $queue['exclusive'] ?? false;//队列是否可以被其他队列访问
             $autoDelete = $queue['auto_delete'] ?? false;//通道关闭后是否删除队列
             //dump($queueName);

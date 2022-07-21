@@ -1,6 +1,7 @@
 <?php
 namespace qmmonitor\core;
 
+use qmmonitor\exception\MonitorException;
 use qmmonitor\extra\Color;
 use qmmonitor\extra\pojo\JobArguments;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
@@ -86,6 +87,37 @@ class Core
     public function put($message,RabbitMqQueueArguments $rabbitMqQueueArguments,array $config = [])
     {
         //ConfigurationManager::getInstance()->loadConfig($config);
+        //检测消息长度
+        $this->checkLength($message);
+        $runRightNow = (bool)ConfigurationManager::getInstance()->getConfig('queue_run_right_now');
+        if ($runRightNow) {
+            $queueName = $rabbitMqQueueArguments->getQueueName();
+            //以下为兼容处理
+            if (empty($queueName)) {
+                //根据配置拿到相应的job信息
+                $queueName = ConfigurationManager::getInstance()
+                    ->getQueueByExchangeName($rabbitMqQueueArguments->getExchange(),$rabbitMqQueueArguments->getRouteKey());
+                $rabbitMqQueueArguments->setQueueName($queueName);
+            } else {
+                //检测参数是否正常
+                ConfigurationManager::getInstance()->checkQueueExist($rabbitMqQueueArguments);
+            }
+            //获取队列名称及Job绑定信息
+            $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
+            $nowQueueConfig = $queuesConfig[$queueName] ?? [];
+            if (empty($nowQueueConfig)) throw new MonitorException("当前配置queue中缺少{$queueName}的相应配置");
+            //设置参数
+            $jobArguments = new JobArguments();
+            $jobArguments->setQueueName($queueName)
+                ->setMessage($message)
+                ->setConfigurationManager(ConfigurationManager::getInstance());
+            if (PHP_SAPI == 'cli' && DIRECTORY_SEPARATOR == '/') {
+                $jobArguments->setPid(posix_getpid());
+            }
+            //执行任务
+            Core::getInstance()->runJob($jobArguments,$nowQueueConfig);
+            return true;
+        }
         $connectionConfig = ConfigurationManager::getInstance()->getConfig('amqp');
         return \qmmonitor\core\RabbitMqManager::getInstance($connectionConfig)->put($message,$rabbitMqQueueArguments);
     }
@@ -108,5 +140,17 @@ class Core
         return $this;
     }
 
+    /**
+     * 检查消息长度
+     * @param $message
+     * @throws MonitorException
+     */
+    public function checkLength($message)
+    {
+        if (is_string($message)) {
+            $size = mb_strlen($message) / 1024;
+            if ($size > 64) throw new MonitorException('消息大小不能超出64KB');
+        }
+    }
 
 }
