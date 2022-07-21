@@ -111,6 +111,7 @@ class ConfigurationManager
             if (empty($exchangeName)) exit(Color::error('交换机名称不能为空'));
             $queues = $exChange['queues'] ?? [];
             if (empty($queues)) exit(Color::error("当前交换机{$exchangeName}必须配置队列信息"));
+            $exChange['type'] = $exChange['type'] ?? 'direct';
             foreach ($queues as $queueName => $queue) {
                 if (empty($queueName)) exit(Color::error('队列名称不能为空'));
                 if ($exChange['type'] == 'direct' || $exChange['type'] == 'topic') {
