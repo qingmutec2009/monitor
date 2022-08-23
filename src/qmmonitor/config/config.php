@@ -22,6 +22,9 @@ return [
         $message->ack();
         return true;
     },
+    'initialize'    => function() {
+        echo '我是初始化方法' . PHP_EOL;
+    },
     //exchange
     'exchanges'  => [
         'direct_qm_goods_exchange'  => [

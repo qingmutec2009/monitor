@@ -69,6 +69,12 @@ class Core
         $amqpConfig = ConfigurationManager::getInstance()->getConfig('amqp');
         //获取任务配置
         $queuesConfig = ConfigurationManager::getInstance()->getConfig('queue');
+        //初始化,如果有注册则会执行
+        $initClosure = ConfigurationManager::getInstance()->getConfig('initialize');
+        if (!empty($initClosure)) {
+            $initClosure();
+        }
+        //创建进程器
         ProcessManager::getInstance()->createProcess();
         foreach ($queuesConfig as $queueName => $nowQueueConfig) {
             ProcessManager::getInstance()->executeRabbitMq($enableCoroutine,$queueName,$amqpConfig,$nowQueueConfig);
