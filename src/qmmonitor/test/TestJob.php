@@ -37,7 +37,6 @@ class TestJob extends AbstractJob
             $command->put($this->params,$rabbitMqQueueArguments);
         }*/
         $message_id = $this->jobArguments->getAMQPmessage()->get_properties()['message_id'];
-        var_dump($message_id);
         $rand = [10000,1000000,100000,10,500000,900000];
         $data = [];$max = $rand[array_rand($rand)];
         for ($i = 0;$i < $max;$i ++) {

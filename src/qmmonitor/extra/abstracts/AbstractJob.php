@@ -82,11 +82,16 @@ abstract class AbstractJob
         if (!$autoAck) {
             $amqpConfig = $this->jobArguments->getConfigurationManager()->getConfig('amqp');
             if (!$amqpConfig['no_ack']) {
-                $AMQPMessage->ack();
-                return true;
+                try {
+                    $AMQPMessage->ack();
+                    return true;
+                } catch (\LogicException $exception) {
+                    //捕获此异常主要是针对担心重复消费时
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
     /**
