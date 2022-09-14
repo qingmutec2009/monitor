@@ -2,6 +2,7 @@
 namespace qmmonitor\extra\abstracts;
 
 use qmmonitor\command\Command;
+use qmmonitor\extra\Color;
 use qmmonitor\extra\traits\Singleton;
 use Swoole\Process;
 use Swoole\Process\Manager;
@@ -27,6 +28,7 @@ abstract class AbstractProcess
             //echo "{$signo}SIGHUP信号处理器被调用 ".PHP_EOL;
         });*/
         pcntl_signal(SIGTERM,  function($signo) {
+            echo Color::warning("接收到信息SIGTERM，即将停止".PHP_EOL);
             self::$isRunning = false;
             //echo "{$signo}停止信号".PHP_EOL;
         });

@@ -6,9 +6,11 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use qmmonitor\command\Command;
 use qmmonitor\exception\MonitorException;
+use qmmonitor\extra\Color;
 use qmmonitor\extra\pojo\JobArguments;
 use qmmonitor\extra\pojo\RabbitMqQueueArguments;
 use qmmonitor\extra\traits\Singleton;
+use qmmonitor\helper\PhpHelper;
 use qmmonitor\process\ProcessManager;
 use Swoole\Coroutine;
 use Swoole\Process;
@@ -227,13 +229,15 @@ class RabbitMqManager
             $jobArguments->setProcessName($processName);
             $isSuccess = true;
             //重试次数，根据配置而定默认=3
-            for ($i = 0;$i < ConfigurationManager::getInstance()->getConfig('retry'); $i ++) {
+            $retry = ConfigurationManager::getInstance()->getConfig('retry');
+            for ($i = 0;$i < $retry; $i ++) {
                 //处理业务逻辑
                 if ($isSuccess = Core::getInstance()->runJob($jobArguments,$nowQueueConfig)) {
                     break;
                 }
             }
             if (!$isSuccess) {
+                echo Color::error($processName."重试{$retry}次异常，即将调起配置中的回调".PHP_EOL);
                 //如果重试结果依然是失败的，则会调起
                 $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
                 $throwable = Core::getInstance()->getThrowable();
@@ -242,11 +246,12 @@ class RabbitMqManager
             //消息确认
             $autoAck = $nowQueueConfig['auto_ack'] ?? true;
             if ($autoAck && !$this->getNoAck()) {
+                echo Color::warning($processName."当前任务={$processName},当前消息={$jobArguments->getMessage()}即将自动确认".PHP_EOL);
                 $msg->ack();
             }
             //只要是走完一个流程，将重置进程名为已停止
-            //echo "队列名称{$queueName}：队列流程已完成，即将设置进程为stopped".PHP_EOL;
-            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped',Command::$projectName);
+            //echo "队列名称{$queueName}：队列流程已完成，即将设置进程为done".PHP_EOL;
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'done',Command::$projectName);
             ProcessManager::getInstance()->setProcessName($processName);
         };
     }

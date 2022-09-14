@@ -89,7 +89,7 @@ class PhpHelper
             foreach ($list as $item) {
                 if (strpos($item,'activity') === false) {
                     //只要不是活动进程则一律停止
-                    echo Color::notice("当前正在关闭的进程信息:{$item}".PHP_EOL);
+                    echo Color::notice("进程:{$item}已停止".PHP_EOL);
                     $workId = PhpHelper::getPidFromOutput($item);
                     PhpHelper::kill($workId,9);
                 }
