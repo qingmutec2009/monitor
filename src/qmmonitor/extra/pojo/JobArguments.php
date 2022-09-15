@@ -68,6 +68,12 @@ class JobArguments
      */
     private $processName = '';
 
+    /**
+     * 当前重试次数值,从1开始
+     * @var int
+     */
+    private $retryNum = 1;
+
     public function __construct()
     {
 
@@ -250,6 +256,24 @@ class JobArguments
     public function setProcessName(string $processName): self
     {
         $this->processName = $processName;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRetryNum(): int
+    {
+        return $this->retryNum;
+    }
+
+    /**
+     * @param int $retryNum
+     * @return $this
+     */
+    public function setRetryNum(int $retryNum): self
+    {
+        $this->retryNum = $retryNum;
         return $this;
     }
 }

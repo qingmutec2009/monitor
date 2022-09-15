@@ -231,22 +231,26 @@ class RabbitMqManager
             //重试次数，根据配置而定默认=3
             $retry = ConfigurationManager::getInstance()->getConfig('retry');
             for ($i = 0;$i < $retry; $i ++) {
+                //设置当前属于重试的第几次，以1为基准。
+                $jobArguments->setRetryNum($i + 1);
                 //处理业务逻辑
                 if ($isSuccess = Core::getInstance()->runJob($jobArguments,$nowQueueConfig)) {
                     break;
                 }
             }
             if (!$isSuccess) {
-                echo Color::error($processName."重试{$retry}次异常，即将调起配置中的回调".PHP_EOL);
+                echo Color::warning($processName."重试{$retry}次异常，即将调起配置中的回调".PHP_EOL);
                 //如果重试结果依然是失败的，则会调起
                 $exceptionClosure = ConfigurationManager::getInstance()->getConfig('exception_closure');
                 $throwable = Core::getInstance()->getThrowable();
                 $exceptionClosure($throwable,$msg,$nowQueueConfig);
             }
             //消息确认
-            $autoAck = $nowQueueConfig['auto_ack'] ?? true;
+            $autoAck = $nowQueueConfig['auto_ack'] ?? false;
             if ($autoAck && !$this->getNoAck()) {
-                echo Color::warning($processName."当前任务={$processName},当前消息={$jobArguments->getMessage()}即将自动确认".PHP_EOL);
+                if (ConfigurationManager::getInstance()->getConfig('debug')) {
+                    echo Color::info($processName."当前任务={$processName},当前消息={$jobArguments->getMessage()}即将自动确认".PHP_EOL);
+                }
                 $msg->ack();
             }
             //只要是走完一个流程，将重置进程名为已停止

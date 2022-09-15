@@ -49,6 +49,8 @@ class Core
             } catch (\Throwable $throwable) {
                 $isSuccess = false;
                 $this->setThrowable($throwable);
+                //一个任务有问题则不会再往下执行了，以保证多个job的事务完整性及$isSuccess的准确性
+                break;
             }
         }
         $endTime = microtime(true);

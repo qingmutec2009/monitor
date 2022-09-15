@@ -30,8 +30,10 @@ composer命令： swoole process manager for rabbitMQ <br/>
 9.  v1.3中根目录会有相应的.sh文件可以直接使用。
 10. 在框架中可使用框架自带的Command命令去调用\qmmonitor\command中相应的方法完成对接。
 11. 如new \qmmonitor\comman(env('app.app_name'));需要传入当前项目名称会被当作当前进程标识。
-12. 初始状态=free,只要有消息进来activity和stopped切换。
+12. 初始状态=free,只要有消息进来activity和done之间切换，如果接收到退出信息时状态会变成stopped。
 13. 内部添加了对messageId的支持，在对接阿里时rabbitmq时必须使用此属性
+14. 接收到退出信息、重试超限执行回调前会强制输出告警提示。
+15. JobArguments类中会携带一些必要参数转发到业务实现子类Job中，基类是：AbstractJob
 
 #### 接入示例
 
