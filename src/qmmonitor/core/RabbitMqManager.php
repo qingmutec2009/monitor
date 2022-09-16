@@ -207,10 +207,10 @@ class RabbitMqManager
                         $str = $rs ? "上锁成功" : "上锁失败";
                         echo Color::info("当前锁{$nxName}已开启重连间隔时间配置并监测到已过期，{$str}，连接即将重连".PHP_EOL);
                     }
+                    //需要重连
+                    $this->reconnect();
                 }
                 $redis->close();
-                //需要重连
-                $this->reconnect();
             }
             $channel->wait();
         }
