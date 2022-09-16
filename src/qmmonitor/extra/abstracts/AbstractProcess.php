@@ -56,13 +56,17 @@ abstract class AbstractProcess
      * @param string $queueName
      * @param int $workerId
      * @param $consumerStatus
+     * @param string $prefix 前缀
      * @return string
      */
-    public function getProcessName(string $queueName,int $workerId,$consumerStatus,string $projectName) : string
+    public function getProcessName(string $queueName,int $workerId,string $projectName,string $consumerStatus = '',string $prefix = 'php-work') : string
     {
         $applicationName = Command::APPLICATION_NAME;
-        $processName = "php-work-{$applicationName}-{$projectName}";
-        $processName .= "-{$queueName}-{$workerId}-{$consumerStatus}";
+        $processName = "{$prefix}-{$applicationName}-{$projectName}";
+        $processName .= "-{$queueName}-{$workerId}";
+        if (!empty($consumerStatus)) {
+            $processName .= "-{$consumerStatus}";
+        }
         return $processName;
     }
 

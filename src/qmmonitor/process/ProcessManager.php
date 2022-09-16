@@ -36,7 +36,7 @@ class ProcessManager extends AbstractProcess
             //设置信号
             $this->signal();
             $pid = posix_getpid();
-            $processName = $this->getProcessName($queueName,$workerId,'free',Command::$projectName);
+            $processName = $this->getProcessName($queueName,$workerId,Command::$projectName,'free');
             //默认使用free标记空闲进程
             $this->setProcessName($processName);
             echo("[Worker:{$workerId}] WorkerStarted, pid: {$pid},process:$processName" . PHP_EOL);
@@ -47,8 +47,8 @@ class ProcessManager extends AbstractProcess
             $callBack = RabbitMqManager::getInstance()
                 ->consumerCallBack($channel,$nowQueueConfig,$queueName,$workerId,$pid,$processName);
             //消费
-            RabbitMqManager::getInstance()->consumer($queueName, $callBack, $channel);
-
+            $nxName = $this->getProcessName($queueName,$workerId,Command::$projectName,'','php-nx');
+            RabbitMqManager::getInstance()->consumer($queueName, $callBack, $channel, $nxName);
         },$enableCoroutine);
         $this->process = $pm;
         return $this->process;

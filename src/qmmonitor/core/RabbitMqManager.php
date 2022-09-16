@@ -156,17 +156,17 @@ class RabbitMqManager
     /**
      * 设置qos
      * @param AMQPChannel|null $channel
-     * @param $prefetchSize int
+     * @param $prefetchCount int
      * @param $prefetchCount
      * @param $aGlobal
      * @return AMQPChannel
      */
-    public function qos(? AMQPChannel $channel = null,$prefetchSize = 1,$prefetchCount = null,$aGlobal = null) : AMQPChannel
+    public function qos(? AMQPChannel $channel = null,$prefetchCount = 1,$aGlobal = null) : AMQPChannel
     {
         if (empty($channel)) $channel = $this->getChannel();
         //设置prefetch_count=1。这样是告诉RabbitMQ，再同一时刻，不要发送超过1条消息给一个工作者（worker），即按消费能力分发
         //直到它已经处理了上一条消息并且作出了响应。这样，RabbitMQ就会把消息分发给下一个空闲的工作者（worker），轮询、负载均衡配置
-        $channel->basic_qos(null, $prefetchSize, null);
+        $channel->basic_qos(null, $prefetchCount, $aGlobal);
         $this->channel = $channel;
         return $channel;
     }
@@ -176,8 +176,9 @@ class RabbitMqManager
      * @param string $queueName
      * @param $callBack
      * @param AMQPChannel $channel
+     * @param string $nxName
      */
-    public function consumer(string $queueName,\Closure $callBack,? AMQPChannel $channel)
+    public function consumer(string $queueName,\Closure $callBack,? AMQPChannel $channel, string $nxName)
     {
         if (empty($channel)) $channel = $this->channel;
         $consumerTag = $channel->basic_consume(
@@ -191,6 +192,22 @@ class RabbitMqManager
         );
         #监听消息
         while(count($channel->callbacks)) {
+            //每次消息时做下检查
+            $reConnectionInterval = ConfigurationManager::getInstance()->getConfig('reconnection_interval');
+            if ($reConnectionInterval > 0) {
+                //以下使用redis来设置，以防止资源争抢
+                if (!PhpHelper::existNx($nxName)) {
+                    //如果不存在锁，则需要重新设置
+                    $rs = PhpHelper::setNx($nxName,$reConnectionInterval);
+                    //如果是debug模式则输出
+                    if (ConfigurationManager::getInstance()->getConfig('debug')) {
+                        $str = $rs ? "上锁成功" : "上锁失败";
+                        echo Color::info("当前锁{$nxName}已开启重连间隔时间配置并监测到已过期，{$str}，连接即将重连".PHP_EOL);
+                    }
+                    //需要重连
+                    $this->reconnect();
+                }
+            }
             $channel->wait();
         }
     }
@@ -210,12 +227,12 @@ class RabbitMqManager
             if (!ProcessManager::$isRunning) {
                 //echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
                 //只要此属性发生变化为false,将停止一切消息行为,此处拦截将不会进入到业务代码中去。ACK机制也能够确保消息不丢失。
-                $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'stopped',Command::$projectName);
+                $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,Command::$projectName,'stopped');
                 ProcessManager::getInstance()->setProcessName($processName);
                 return '';
             }
             //说明是活动进程
-            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'activity',Command::$projectName);
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,Command::$projectName,'activity');
             ProcessManager::getInstance()->setProcessName($processName);
             //处理当前整合信息
             $jobArguments = new JobArguments();
@@ -255,22 +272,30 @@ class RabbitMqManager
             }
             //只要是走完一个流程，将重置进程名为已停止
             //echo "队列名称{$queueName}：队列流程已完成，即将设置进程为done".PHP_EOL;
-            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,'done',Command::$projectName);
+            $processName = ProcessManager::getInstance()->getProcessName($queueName,$workerId,Command::$projectName,'done');
             ProcessManager::getInstance()->setProcessName($processName);
         };
     }
 
     /**
      * 重连
+     * @return \PhpAmqpLib\Channel\AbstractChannel|AMQPChannel
      */
     public function reConnect()
     {
-        if (!$this->connection->isConnected()) {
-            $this->connection = null;
-            $this->channel = null;
-            $this->getChannel();
-        }
-        return $this->channel;
+//        if ($this->connection->isConnected()) {
+//            //关闭连接-无法关闭，Call to a member function wait_channel() 可能与子进程有关
+//            //$this->close();
+//            $this->connection = null;
+//            $this->channel = null;
+//            return $this->getChannel();
+//        }
+        //使用自带的重连
+        //$this->connection->reconnect();
+        //将连接对象重置为null,然后再重新连接
+        $this->connection = null;
+        $this->channel = null;
+        return $this->getChannel();
     }
 
     /**

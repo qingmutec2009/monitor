@@ -11,6 +11,12 @@ return [
     'queue_run_right_now'   => false,
     'max_memory_limit'      => '30M',//单位M，需要开启debug才会生效
     'debug'                 => true,//是否开启调试模式,会输出一些内存信息或告警
+    'reconnection_interval' => 10,//重连间隔时间,单位s
+    'redis'                 => function() {
+        $redis = new Redis();
+        $redis->connect('127.0.0.1',6379);
+        return $redis;
+    },
     'exception_closure' => function(\Throwable $throwable, AMQPMessage $message, array $config) {
         //有一个或多个任务时执行时捕获异常或者错误，一旦在异常或错误引起重试次数超标后则会回调此方法
         echo '我是被错误或异常触发的回调' . PHP_EOL;

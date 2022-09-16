@@ -274,4 +274,102 @@ class PhpHelper
     {
         return !empty($unit) ? (($end - $start) * 1000) . $unit : (($end - $start) * 1000);
     }
+
+    /**
+     * 获取记录
+     * @deprecated
+     * @return array
+     */
+    public static function getRecord() : array
+    {
+        $recordFile = self::getRecordFile();
+        if (is_file($recordFile)) {
+            $json = file_get_contents($recordFile);
+            $content = !empty($json) ? json_decode($json,true) : self::getRecordContent();
+        } else {
+            $content = self::getRecordContent();
+        }
+        return $content;
+    }
+
+    /**
+     * 获取记录
+     * @param string $nxName
+     * @param int $reConnectionInterval 重连间隔时间，单位秒
+     * @return bool
+     */
+    public static function setNx(string $nxName,int $reConnectionInterval) : bool
+    {
+        $closure = ConfigurationManager::getInstance()->getConfig('redis');
+        /**@var $redis \Redis **/
+        $redis = $closure();
+        $rs = $redis->setnx($nxName,time());
+        $redis->expire($nxName,$reConnectionInterval);
+        $redis->close();
+        return $rs;
+    }
+
+    /**
+     * 锁是否存在
+     * @param string $nxName
+     * @return bool
+     */
+    public static function existNx(string $nxName) : bool
+    {
+        $closure = ConfigurationManager::getInstance()->getConfig('redis');
+        /**@var $redis \Redis **/
+        $redis = $closure();
+        return $redis->exists($nxName);
+    }
+
+    /**
+     * 获取记录文件
+     * @deprecated
+     * @return string
+     */
+    public static function getRecordFile() : string
+    {
+        $tempDir = ConfigurationManager::getInstance()->getConfig('temp_dir');
+        $recordFile = $tempDir . '/' . 'record.log';
+        return $recordFile;
+    }
+
+    /**
+     * 获取记录内容
+     * @deprecated
+     * @return array
+     */
+    public static function getRecordContent() : array
+    {
+        $content = [
+            'record_time' => time(),
+        ];
+        return $content;
+    }
+
+    /**
+     * 如果record_time=记录时间+reconnection_interval=间隔时间>当前时间则需要重置记录
+     * @deprecated
+     * @param array $content 记录内容
+     * @param int $reConnectionInterval 重连间隔
+     * @return bool
+     */
+    public static function record(array $content,int $reConnectionInterval) : bool
+    {
+        //是否已经超时
+        $nowtime = time();
+        $isExpire = $nowtime > ($content['record_time'] + $reConnectionInterval) ? true : false;
+        if ($isExpire) {
+            //重新记录
+            $content['record_time'] = $nowtime;
+            $recordFile = self::getRecordFile();
+            $recordStr = json_encode($content,JSON_UNESCAPED_SLASHES + JSON_UNESCAPED_UNICODE);
+            file_put_contents($recordFile,$recordStr,LOCK_EX);
+            //如果是debug模式则输出
+            if (ConfigurationManager::getInstance()->getConfig('debug')) {
+                echo Color::info("当前已开启重连间隔时间配置并监测到已过期，已记录了本地重置时间{$recordStr}".PHP_EOL);
+            }
+        }
+        return $isExpire;
+    }
 }

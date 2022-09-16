@@ -307,5 +307,7 @@ class ConfigurationManager
             $debug = $debug == 'true' ? true : false;
         }
         $this->config['debug'] = $debug;
+        $reConnectionInterval = (int)$this->config['reconnection_interval'];
+        $this->config['reconnection_interval'] = $reConnectionInterval;
     }
 }
