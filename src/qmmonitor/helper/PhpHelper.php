@@ -319,7 +319,9 @@ class PhpHelper
         $closure = ConfigurationManager::getInstance()->getConfig('redis');
         /**@var $redis \Redis **/
         $redis = $closure();
-        return $redis->exists($nxName);
+        $rs = $redis->exists($nxName);
+        $redis->close();
+        return $rs;
     }
 
     /**
