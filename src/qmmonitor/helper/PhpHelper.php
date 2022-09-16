@@ -293,38 +293,6 @@ class PhpHelper
     }
 
     /**
-     * 获取记录
-     * @param string $nxName
-     * @param int $reConnectionInterval 重连间隔时间，单位秒
-     * @return bool
-     */
-    public static function setNx(string $nxName,int $reConnectionInterval) : bool
-    {
-        $closure = ConfigurationManager::getInstance()->getConfig('redis');
-        /**@var $redis \Redis **/
-        $redis = $closure();
-        $rs = $redis->setnx($nxName,time());
-        $redis->expire($nxName,$reConnectionInterval);
-        $redis->close();
-        return $rs;
-    }
-
-    /**
-     * 锁是否存在
-     * @param string $nxName
-     * @return bool
-     */
-    public static function existNx(string $nxName) : bool
-    {
-        $closure = ConfigurationManager::getInstance()->getConfig('redis');
-        /**@var $redis \Redis **/
-        $redis = $closure();
-        $rs = $redis->exists($nxName);
-        $redis->close();
-        return $rs;
-    }
-
-    /**
      * 获取记录文件
      * @deprecated
      * @return string

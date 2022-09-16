@@ -196,17 +196,21 @@ class RabbitMqManager
             $reConnectionInterval = ConfigurationManager::getInstance()->getConfig('reconnection_interval');
             if ($reConnectionInterval > 0) {
                 //以下使用redis来设置，以防止资源争抢
-                if (!PhpHelper::existNx($nxName)) {
+                $closure = ConfigurationManager::getInstance()->getConfig('redis');
+                /**@var $redis \Redis **/
+                $redis = $closure();
+                if (!$redis->exists($nxName)) {
                     //如果不存在锁，则需要重新设置
-                    $rs = PhpHelper::setNx($nxName,$reConnectionInterval);
+                    $rs = $redis->set($nxName,time(),$reConnectionInterval);
                     //如果是debug模式则输出
                     if (ConfigurationManager::getInstance()->getConfig('debug')) {
                         $str = $rs ? "上锁成功" : "上锁失败";
                         echo Color::info("当前锁{$nxName}已开启重连间隔时间配置并监测到已过期，{$str}，连接即将重连".PHP_EOL);
                     }
-                    //需要重连
-                    $this->reconnect();
                 }
+                $redis->close();
+                //需要重连
+                $this->reconnect();
             }
             $channel->wait();
         }
