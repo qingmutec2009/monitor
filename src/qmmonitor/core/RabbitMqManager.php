@@ -191,7 +191,6 @@ class RabbitMqManager
         $consumerTag = $this->initChannelBasic($queueName, $callBack);
         #监听消息
         while(count($this->getChannel()->callbacks)) {
-            var_dump($nowQueueConfig['timeout']);
             try {
                 //$timeout秒没有队列数据推送，就重新连接，防止服务端断开连接后，进程盲目等待
                 $this->channel->wait(null, false, $nowQueueConfig['timeout']);
