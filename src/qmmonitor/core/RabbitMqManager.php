@@ -198,7 +198,7 @@ class RabbitMqManager
                 //需要重连
                 if (ConfigurationManager::getInstance()->getConfig('debug')) {
                     $exceptionMsg = $e->getMessage();
-                    echo Color::info("异常{$exceptionMsg}:正在重连.....".PHP_EOL);
+                    echo Color::info("异常:{$exceptionMsg},正在重连.....".PHP_EOL);
                 }
                 $this->reconnect();
                 //重新初始化channel
