@@ -137,6 +137,8 @@ class ConfigurationManager
             if (!in_array($queueName,$queueNames)) exit(Color::error("当前队列名称{$queueName}不在exchange中"));
             if (empty($queueInfo['count'])) $queueConfig[$queueName]['count'] = 1;
             if (is_string($queueInfo['job'])) $queueConfig[$queueName]['job'] = explode(',',$queueInfo['job']);
+            //新增消息超时时间以队列为维度进行配置
+            $queueConfig[$queueName]['timeout'] =  (int)($queueInfo['timeout'] ?? 0);
         }
         $this->setConfig('queue',$queueConfig);
     }
@@ -307,7 +309,5 @@ class ConfigurationManager
             $debug = $debug == 'true' ? true : false;
         }
         $this->config['debug'] = $debug;
-        $reConnectionInterval = (int)$this->config['reconnection_interval'] ?? 0;
-        $this->config['reconnection_interval'] = $reConnectionInterval;
     }
 }

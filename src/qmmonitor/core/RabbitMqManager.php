@@ -147,10 +147,18 @@ class RabbitMqManager
         return $this->channel;
     }
 
+    /**
+     * 关闭连接
+     */
     public function close()
     {
-        $this->channel->close();
-        $this->connection->close();
+        //关闭连接
+        try {
+            $this->channel->close();
+            $this->connection->close();
+        } catch (\Throwable $th) {
+            echo (date('Y-m-d H:i:s') . ' - ' . 'rabbitmq消费等待消息超时关闭连接出错：' . $th->getMessage() . PHP_EOL . $th);
+        }
     }
 
     /**
@@ -175,13 +183,39 @@ class RabbitMqManager
      * rabbitmq消费
      * @param string $queueName
      * @param $callBack
-     * @param AMQPChannel $channel
-     * @param string $nxName
+     * @param array $nowQueueConfig
      */
-    public function consumer(string $queueName,\Closure $callBack,? AMQPChannel $channel, string $nxName)
+    public function consumer(string $queueName,\Closure $callBack, array $nowQueueConfig)
     {
-        if (empty($channel)) $channel = $this->channel;
-        $consumerTag = $channel->basic_consume(
+        //初始化channel
+        $consumerTag = $this->initChannelBasic($queueName, $callBack);
+        #监听消息
+        while(count($this->getChannel()->callbacks)) {
+            var_dump($nowQueueConfig['timeout']);
+            try {
+                //$timeout秒没有队列数据推送，就重新连接，防止服务端断开连接后，进程盲目等待
+                $this->channel->wait(null, false, $nowQueueConfig['timeout']);
+            } catch (\PhpAmqpLib\Exception\AMQPTimeoutException $e) {
+                //需要重连
+                if (ConfigurationManager::getInstance()->getConfig('debug')) {
+                    $exceptionMsg = $e->getMessage();
+                    echo Color::info("异常{$exceptionMsg}:正在重连.....".PHP_EOL);
+                }
+                $this->reconnect();
+                //重新初始化channel
+                $this->initChannelBasic($queueName, $callBack);
+            }
+        }
+    }
+
+    /**
+     * 初始化 channel callbacks
+     * @param string $queueName 队列名称
+     * @param \Closure $callBack 回调函数
+     */
+    protected function initChannelBasic(string $queueName,\Closure $callBack) : string
+    {
+        return $this->channel->basic_consume(
             $queueName,
             RabbitMqManager::getInstance()->getConsumerTag(),
             RabbitMqManager::getInstance()->getNoLocal(),
@@ -190,30 +224,6 @@ class RabbitMqManager
             RabbitMqManager::getInstance()->getNoWait(),
             $callBack
         );
-        #监听消息
-        while(count($channel->callbacks)) {
-            //每次消息时做下检查
-            $reConnectionInterval = ConfigurationManager::getInstance()->getConfig('reconnection_interval');
-            if ($reConnectionInterval > 0) {
-                //以下使用redis来设置，以防止资源争抢
-                $closure = ConfigurationManager::getInstance()->getConfig('redis');
-                /**@var $redis \Redis **/
-                $redis = $closure();
-                if (!$redis->exists($nxName)) {
-                    //如果不存在锁，则需要重新设置
-                    $rs = $redis->set($nxName,time(),$reConnectionInterval);
-                    //如果是debug模式则输出
-                    if (ConfigurationManager::getInstance()->getConfig('debug')) {
-                        $str = $rs ? "上锁成功" : "上锁失败";
-                        echo Color::info("当前锁{$nxName}已开启重连间隔时间配置并监测到已过期，{$str}，连接即将重连".PHP_EOL);
-                    }
-                    //需要重连
-                    $this->reconnect();
-                }
-                $redis->close();
-            }
-            $channel->wait();
-        }
     }
 
     /**
@@ -225,9 +235,9 @@ class RabbitMqManager
      * @param int $pid 当前父级工作进程id
      * @return \Closure
      */
-    public function consumerCallBack(AMQPChannel $channel,array $nowQueueConfig,string $queueName,int $workerId,$pid = 0,$processName = '') : \Closure
+    public function consumerCallBack(array $nowQueueConfig,string $queueName,int $workerId,$pid = 0,$processName = '') : \Closure
     {
-        return  function (AMQPMessage $msg) use ($channel,$nowQueueConfig,$queueName,$workerId,$pid,$processName){
+        return  function (AMQPMessage $msg) use ($nowQueueConfig,$queueName,$workerId,$pid,$processName){
             if (!ProcessManager::$isRunning) {
                 //echo "队列名称{$queueName}：监测到isRunning为false了，即将设置进程为stopped".PHP_EOL;
                 //只要此属性发生变化为false,将停止一切消息行为,此处拦截将不会进入到业务代码中去。ACK机制也能够确保消息不丢失。
@@ -244,7 +254,7 @@ class RabbitMqManager
             $jobArguments->setWorkerId($workerId);
             $jobArguments->setPid($workerId);
             $jobArguments->setQueueName($queueName);
-            $jobArguments->setChannel($channel);
+            $jobArguments->setChannel($this->getChannel());
             $jobArguments->setAMQPmessage($msg);
             $jobArguments->setConfigurationManager(ConfigurationManager::getInstance());
             $jobArguments->setProcessName($processName);
@@ -287,16 +297,8 @@ class RabbitMqManager
      */
     public function reConnect()
     {
-//        if ($this->connection->isConnected()) {
-//            //关闭连接-无法关闭，Call to a member function wait_channel() 可能与子进程有关
-//            //$this->close();
-//            $this->connection = null;
-//            $this->channel = null;
-//            return $this->getChannel();
-//        }
-        //使用自带的重连
-        //$this->connection->reconnect();
         //将连接对象重置为null,然后再重新连接
+        $this->close();
         $this->connection = null;
         $this->channel = null;
         return $this->getChannel();

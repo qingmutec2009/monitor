@@ -34,9 +34,7 @@ composer命令： swoole process manager for rabbitMQ <br/>
 13. 内部添加了对messageId的支持，在对接阿里时rabbitmq时必须使用此属性
 14. 接收到退出信息、重试超限执行回调前会强制输出告警提示。
 15. JobArguments类中会携带一些必要参数转发到业务实现子类Job中，基类是：AbstractJob
-16. 如果配置了reconnection_interval，则代表会在配置数值之秒后重新连接，以防止连接被断开。
-17. 如果配置了reconnection_interval，依赖于redis,需要配置config中的redis，需要返回可用的redis实例对象。
-18. reconnection_interval值必须是大于0的数值才会真实生效。
+16. 配置按队列维度级别可设置timeout参数（单位秒,默认值=0），意味着在消费消息时阻塞多少秒，超出将重新连接。
 
 #### 接入示例
 
